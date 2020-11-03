@@ -1,2 +1,3 @@
-rootProject.name = 'hm-java-fleet-sdk-consumer'
+rootProject.name = 'hmkit-fleet-consumer'
+include 'hmkit-fleet-consumer'
 
