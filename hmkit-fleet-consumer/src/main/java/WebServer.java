@@ -22,7 +22,7 @@ class WebServer {
 
             ClearVehicleResponse response = (ClearVehicleResponse) requestClearance.get();
 
-            System.out.println("end " + getDate() + ", " + response.getStatus());
+            System.out.println("end " + getDate() + ", result: " + response.getStatus());
             return null;
         });
     }
