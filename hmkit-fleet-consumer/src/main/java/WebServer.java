@@ -23,6 +23,12 @@ class WebServer {
         String path = WebServer.class.getClassLoader().getResource("credentials.yaml").getFile();
         File credentialsFile = new File(path);
         ObjectMapper om = new ObjectMapper(new YAMLFactory()).registerModule(new KotlinModule());
+        /*
+        use credentials.yaml to decode a ServiceAccountApiConfiguration object
+        required keys:
+        privateKey: ""
+        apiKey: ""
+         */
         configuration = om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
 
