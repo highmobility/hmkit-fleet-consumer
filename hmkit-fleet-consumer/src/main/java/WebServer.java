@@ -1,33 +1,48 @@
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.module.kotlin.KotlinModule;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import network.ClearVehicleResponse;
 
 class WebServer {
-    HMKitFleet hmkit = HMKitFleet.getInstance("apiKey");
-    SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss");
+    ServiceAccountApiConfiguration configuration;
+    HMKitFleet hmkit = HMKitFleet.INSTANCE;
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         new WebServer().start();
     }
 
-    void start() throws ExecutionException, InterruptedException {
-        Executors.newCachedThreadPool().submit(() -> {
-            System.out.println("Start " + getDate());
-            CompletableFuture requestClearance = hmkit.requestClearance("vin1");
+    WebServer() throws IOException {
+        String path = WebServer.class.getClassLoader().getResource("credentials.yaml").getFile();
+        File credentialsFile = new File(path);
+        ObjectMapper om = new ObjectMapper(new YAMLFactory()).registerModule(new KotlinModule());
+        configuration = om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
+    }
 
-            ClearVehicleResponse response = (ClearVehicleResponse) requestClearance.get();
+    void start() {
+        hmkit.setConfiguration(configuration);
+        System.out.println("Start " + getDate());
+        CompletableFuture<ClearVehicleResponse> requestClearance = hmkit.requestClearance("vin1");
 
+        requestClearance.thenAcceptAsync(response -> {
             System.out.println("end " + getDate() + ", result: " + response.getStatus());
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
             return null;
         });
+
+        Executors.newCachedThreadPool().submit(() -> requestClearance.get());
     }
 
     String getDate() {
-        return formatter.format(Calendar.getInstance().getTime());
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
+        return LocalTime.now().format(formatter);
     }
 }
