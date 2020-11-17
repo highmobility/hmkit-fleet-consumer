@@ -9,7 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import network.ClearVehicleResponse;
+import model.AuthToken;
+import network.Response;
 
 class WebServer {
     ServiceAccountApiConfiguration configuration;
@@ -33,18 +34,24 @@ class WebServer {
     }
 
     void start() {
-        hmkit.setConfiguration(configuration);
+        hmkit.setEnvironment(HMKitFleet.Environment.DEV);
         System.out.println("Start " + getDate());
-        CompletableFuture<ClearVehicleResponse> requestClearance = hmkit.requestClearance("vin1");
 
-        requestClearance.thenAcceptAsync(response -> {
-            System.out.println("end " + getDate() + ", result: " + response.getStatus());
+        CompletableFuture<Response<AuthToken>> authTokenRequest =
+                hmkit.getAuthToken(configuration);
+
+        authTokenRequest.thenAcceptAsync(response -> {
+            System.out.println("end " + getDate() + ", auth token received: " + response.getResponse().getAuthToken());
         }).exceptionally(ex -> {
             ex.printStackTrace();
             return null;
         });
 
-        Executors.newCachedThreadPool().submit(() -> requestClearance.get());
+        Executors.newCachedThreadPool().submit(() -> authTokenRequest.get());
+
+        // TODO: request a vehicle clearance
+        //        CompletableFuture<ClearVehicle> requestClearance = hmkit.requestClearance("vin1");
+
     }
 
     String getDate() {
