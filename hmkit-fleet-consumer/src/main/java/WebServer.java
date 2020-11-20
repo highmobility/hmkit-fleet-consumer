@@ -11,10 +11,11 @@ import java.util.concurrent.Executors;
 
 import model.AuthToken;
 import network.Response;
+import network.response.ClearanceStatus;
 
 class WebServer {
     ServiceAccountApiConfiguration configuration;
-    HMKitFleet hmkit = HMKitFleet.INSTANCE;
+    HMKitFleet hmkitFleet = HMKitFleet.INSTANCE;
 
     public static void main(String[] args) throws IOException {
         new WebServer().start();
@@ -34,20 +35,25 @@ class WebServer {
     }
 
     void start() {
-        hmkit.setEnvironment(HMKitFleet.Environment.DEV);
         System.out.println("Start " + getDate());
+        hmkitFleet.setEnvironment(HMKitFleet.Environment.DEV);
 
         CompletableFuture<Response<AuthToken>> authTokenRequest =
-                hmkit.getAuthToken(configuration);
+                hmkitFleet.getAuthToken(configuration);
 
-        authTokenRequest.thenAcceptAsync(response -> {
-            System.out.println("end " + getDate() + ", auth token received: " + response.getResponse().getAuthToken());
-        }).exceptionally(ex -> {
-            ex.printStackTrace();
+        CompletableFuture<Response<ClearanceStatus>> requestClearance =
+                authTokenRequest.thenCompose(token ->
+                        hmkitFleet.requestClearance(token.getResponse(), "WBADT43452G296404")
+                );
+
+        requestClearance.thenApply(status -> {
+            System.out.println(String.format("clear vehicle status response: %s", status.getResponse()));
+            System.out.println(String.format("clear vehicle status error: %s", status.getError().getTitle()));
+            System.out.println("End: " + getDate());
             return null;
         });
 
-        Executors.newCachedThreadPool().submit(() -> authTokenRequest.get());
+        Executors.newCachedThreadPool().submit(() -> requestClearance.get());
 
         // TODO: request a vehicle clearance
         //        CompletableFuture<ClearVehicle> requestClearance = hmkit.requestClearance("vin1");
