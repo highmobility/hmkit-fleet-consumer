@@ -1,6 +1,12 @@
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
+import com.highmobility.crypto.DeviceCertificate;
+import com.highmobility.value.Bytes;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +16,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-import model.AuthToken;
+import model.Brand;
+import model.ControlMeasure;
 import network.Response;
 import network.response.ClearanceStatus;
 
@@ -23,14 +30,22 @@ class WebServer {
     }
 
     WebServer() throws IOException {
-        String path = WebServer.class.getClassLoader().getResource("credentials.yaml").getFile();
+        String path = getClass().getClassLoader().getResource("credentials.yaml").getFile();
         File credentialsFile = new File(path);
-        ObjectMapper om = new ObjectMapper(new YAMLFactory()).registerModule(new KotlinModule());
+
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(DeviceCertificate.class, new ItemDeserializer());
+
+        ObjectMapper om = new ObjectMapper(new YAMLFactory())
+                .registerModule(new KotlinModule())
+                .registerModule(module);
+
         /*
         use credentials.yaml to decode a ServiceAccountApiConfiguration object
         required keys:
         privateKey: ""
         apiKey: ""
+        clientCertificate: ""
          */
         configuration = om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
@@ -39,17 +54,18 @@ class WebServer {
         System.out.println("Start " + getDate());
         hmkitFleet.setEnvironment(HMKitFleet.Environment.DEV);
 
-        CompletableFuture<Response<AuthToken>> authTokenRequest =
-                hmkitFleet.getAuthToken(configuration);
-
-//        requestClearances(authTokenRequest);
-        getClearanceStatuses(authTokenRequest);
+        getClearanceStatuses();
+//        requestClearances();
     }
 
-    private void requestClearances(CompletableFuture<Response<AuthToken>> authTokenRequest) {
+    private void requestClearances() {
+        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+
         CompletableFuture<Response<ClearanceStatus>> requestClearance =
-                authTokenRequest.thenCompose(token ->
-                        hmkitFleet.requestClearance(token.getResponse(), "C0NNECT0000000005")
+                hmkitFleet.requestClearance(
+                        "C0NNECT0000000005",
+                        Brand.MERCEDES_BENZ,
+                        List.of(measure)
                 );
 
         requestClearance.thenApply(status -> {
@@ -57,16 +73,17 @@ class WebServer {
             System.out.println(String.format("clear vehicle status error: %s", status.getError().getTitle()));
             System.out.println("End: " + getDate());
             return null;
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            return ex;
         });
 
         Executors.newCachedThreadPool().submit(() -> requestClearance.get());
     }
 
-    private void getClearanceStatuses(CompletableFuture<Response<AuthToken>> authTokenRequest) {
+    private void getClearanceStatuses() {
         CompletableFuture<Response<List<ClearanceStatus>>> getClearance =
-                authTokenRequest.thenCompose(token ->
-                        hmkitFleet.getClearanceStatuses(token.getResponse())
-                );
+                hmkitFleet.getClearanceStatuses();
 
         getClearance.thenApply(statuses -> {
             if (statuses.getResponse() != null) {
@@ -84,6 +101,9 @@ class WebServer {
 
             System.out.println("End: " + getDate());
             return null;
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            return ex;
         });
 
         Executors.newCachedThreadPool().submit(() -> getClearance.get());
@@ -92,5 +112,21 @@ class WebServer {
     String getDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
         return LocalTime.now().format(formatter);
+    }
+}
+
+class ItemDeserializer extends StdDeserializer<DeviceCertificate> {
+    public ItemDeserializer() {
+        this(null);
+    }
+
+    public ItemDeserializer(Class<DeviceCertificate> t) {
+        super(t);
+    }
+
+    @Override
+    public DeviceCertificate deserialize(JsonParser p,
+                                         DeserializationContext ctx) throws IOException {
+        return new DeviceCertificate(new Bytes(p.getText()));
     }
 }
