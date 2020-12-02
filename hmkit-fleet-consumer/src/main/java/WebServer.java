@@ -18,6 +18,7 @@ import java.util.concurrent.Executors;
 
 import model.Brand;
 import model.ControlMeasure;
+import model.Odometer;
 import network.Response;
 import model.ClearanceStatus;
 
