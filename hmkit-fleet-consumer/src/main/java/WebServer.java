@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 import model.Brand;
 import model.ControlMeasure;
 import network.Response;
-import network.response.ClearanceStatus;
+import model.ClearanceStatus;
 
 class WebServer {
     ServiceAccountApiConfiguration configuration;
@@ -59,7 +59,7 @@ class WebServer {
     }
 
     private void requestClearances() {
-        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+        ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
 
         CompletableFuture<Response<ClearanceStatus>> requestClearance =
                 hmkitFleet.requestClearance(
