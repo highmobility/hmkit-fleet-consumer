@@ -23,6 +23,8 @@ import network.Response;
 import model.ClearanceStatus;
 
 class WebServer {
+    final String testVin = "C0NNECT0000000005";
+
     ServiceAccountApiConfiguration configuration;
     HMKitFleet hmkitFleet = HMKitFleet.INSTANCE;
 
@@ -65,7 +67,7 @@ class WebServer {
 
         CompletableFuture<Response<ClearanceStatus>> requestClearance =
                 hmkitFleet.requestClearance(
-                        "C0NNECT0000000005",
+                        testVin,
                         Brand.MERCEDES_BENZ,
                         List.of(measure)
                 );
