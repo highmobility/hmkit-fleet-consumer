@@ -54,6 +54,7 @@ class WebServer {
     void start() {
         System.out.println("Start " + getDate());
         hmkitFleet.setEnvironment(HMKitFleet.Environment.DEV);
+        hmkitFleet.setConfiguration(configuration);
 
         getClearanceStatuses();
 //        requestClearances();
