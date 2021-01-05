@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-//    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 group 'com.highmobility'
@@ -19,7 +19,12 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation 'org.slf4j:slf4j-simple:1.7.30'
 
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.9"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.11.3"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.11.3"
+    // deserialise ServiceAccountConfiguration yaml
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.0"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0"
+
+    // serialise/deserialise VehicleAccess object with kotlin
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
+    implementation "com.charleskorn.kaml:kaml:0.26.0"
 }
