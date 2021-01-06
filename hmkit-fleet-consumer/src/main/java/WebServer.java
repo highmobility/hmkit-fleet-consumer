@@ -39,10 +39,28 @@ class WebServer {
         hmkitFleet.setConfiguration(configurationStore.read());
 
 //        getClearanceStatuses();
-//        requestClearances();
+        requestClearances();
 
-        VehicleAccess vehicleAccess = getVehicleAccess();
+//        VehicleAccess vehicleAccess = getVehicleAccess();
+//        getVehicleDiagnostics(vehicleAccess);
+    }
 
+    private VehicleAccess getVehicleAccess() throws ExecutionException, InterruptedException {
+        VehicleAccess storedVehicleAccess = vehicleAccessStore.read();
+        if (storedVehicleAccess != null) return storedVehicleAccess;
+
+        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin, Brand.DAIMLER_FLEET).get();
+        if (accessResponse.getError() != null)
+            throw new RuntimeException(accessResponse.getError().getDetail());
+
+        VehicleAccess serverVehicleAccess = accessResponse.getResponse();
+        vehicleAccessStore.store(serverVehicleAccess);
+        return serverVehicleAccess;
+
+//        return getTestVehicleAccess();
+    }
+
+    private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
         Response<Bytes> diagnosticsResponse = hmkitFleet.sendCommand(
                 new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED),
                 vehicleAccess
@@ -51,29 +69,15 @@ class WebServer {
         if (diagnosticsResponse.getError() != null)
             throw new RuntimeException(diagnosticsResponse.getError().getTitle());
 
-        Command command = CommandResolver.resolve(diagnosticsResponse.getResponse());
+        Command commandFromVehicle = CommandResolver.resolve(diagnosticsResponse.getResponse());
 
-        if (command instanceof Diagnostics.State) {
-            Diagnostics.State diagnostics = (Diagnostics.State) command;
+        if (commandFromVehicle instanceof Diagnostics.State) {
+            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
             System.out.println(format(
                     "Got diagnostics response: %s", diagnostics.getOdometer().getValue().getValue()));
         }
     }
 
-    private VehicleAccess getVehicleAccess() throws ExecutionException, InterruptedException {
-        VehicleAccess storedAccess = vehicleAccessStore.read();
-        if (storedAccess != null) return storedAccess;
-
-        Response<VehicleAccess> access = hmkitFleet.getVehicleAccess(testVin, Brand.DAIMLER_FLEET).get();
-        if (access.getError() != null)
-            throw new RuntimeException(access.getError().getDetail());
-
-        VehicleAccess serverAccess = access.getResponse();
-
-//        VehicleAccess serverAccess = getTestVehicleAccess();
-        vehicleAccessStore.store(serverAccess);
-
-        return serverAccess;
     }
 
     private void requestClearances() {
@@ -87,8 +91,8 @@ class WebServer {
                 );
 
         requestClearance.thenApply(status -> {
-            System.out.println(format("clear vehicle status response: %s", status.getResponse()));
-            System.out.println(format("clear vehicle status error: %s", status.getError().getTitle()));
+            System.out.println(format("requestClearances response: %s", status.getResponse()));
+            System.out.println(format("requestClearances error: %s", status.getError().getTitle()));
             System.out.println("End: " + getDate());
             return null;
         }).exceptionally(ex -> {
@@ -106,7 +110,7 @@ class WebServer {
         getClearance.thenApply(statuses -> {
             if (statuses.getResponse() != null) {
                 if (statuses.getResponse().size() > 0) {
-                    System.out.println(format("clear vehicle status response"));
+                    System.out.println(format("getClearanceStatuses response"));
                     for (ClearanceStatus status : statuses.getResponse()) {
                         System.out.println(format(format("status: %s:%s",
                                 status.getVin(),
