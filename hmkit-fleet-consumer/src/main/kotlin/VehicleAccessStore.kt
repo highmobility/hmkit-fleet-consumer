@@ -17,7 +17,7 @@ class VehicleAccessStore {
         Files.write(path, encoded.toByteArray(), StandardOpenOption.CREATE)
     }
 
-    fun read(): VehicleAccess? {
+    fun read(vin:String): VehicleAccess? {
         return try {
             val content = Files.readString(path)
 

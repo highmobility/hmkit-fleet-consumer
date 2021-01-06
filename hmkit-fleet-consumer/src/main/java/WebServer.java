@@ -1,7 +1,6 @@
 import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
-import com.highmobility.crypto.AccessCertificate;
 import com.highmobility.value.Bytes;
 
 import java.io.IOException;
@@ -12,18 +11,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
-import model.AccessToken;
 import model.Brand;
+import model.ClearanceStatus;
 import model.ControlMeasure;
 import model.Odometer;
 import model.VehicleAccess;
 import network.Response;
-import model.ClearanceStatus;
 
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "C0NNECT0000000005";
+    final String testVin = "C0NNECT0000000006";
 
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
@@ -38,46 +36,24 @@ class WebServer {
         hmkitFleet.setEnvironment(HMKitFleet.Environment.DEV);
         hmkitFleet.setConfiguration(configurationStore.read());
 
+//        requestClearances();
 //        getClearanceStatuses();
-        requestClearances();
 
-//        VehicleAccess vehicleAccess = getVehicleAccess();
+//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
 //        getVehicleDiagnostics(vehicleAccess);
+
+        revokeClearance(testVin);
     }
 
-    private VehicleAccess getVehicleAccess() throws ExecutionException, InterruptedException {
-        VehicleAccess storedVehicleAccess = vehicleAccessStore.read();
-        if (storedVehicleAccess != null) return storedVehicleAccess;
+    private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
+        VehicleAccess vehicleAccess = vehicleAccessStore.read(vin);
+        Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
 
-        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin, Brand.DAIMLER_FLEET).get();
-        if (accessResponse.getError() != null)
-            throw new RuntimeException(accessResponse.getError().getDetail());
-
-        VehicleAccess serverVehicleAccess = accessResponse.getResponse();
-        vehicleAccessStore.store(serverVehicleAccess);
-        return serverVehicleAccess;
-
-//        return getTestVehicleAccess();
-    }
-
-    private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
-        Response<Bytes> diagnosticsResponse = hmkitFleet.sendCommand(
-                new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED),
-                vehicleAccess
-        ).get();
-
-        if (diagnosticsResponse.getError() != null)
-            throw new RuntimeException(diagnosticsResponse.getError().getTitle());
-
-        Command commandFromVehicle = CommandResolver.resolve(diagnosticsResponse.getResponse());
-
-        if (commandFromVehicle instanceof Diagnostics.State) {
-            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
-            System.out.println(format(
-                    "Got diagnostics response: %s", diagnostics.getOdometer().getValue().getValue()));
+        if (response.getError() != null) {
+            System.out.println(format("revokeClearance error: %s", response.getError().getDetail()));
+        } else {
+            System.out.println(format("revokeClearance success"));
         }
-    }
-
     }
 
     private void requestClearances() {
@@ -129,6 +105,37 @@ class WebServer {
         });
 
         Executors.newCachedThreadPool().submit(() -> getClearance.get());
+    }
+
+    private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException {
+        VehicleAccess storedVehicleAccess = vehicleAccessStore.read(vin);
+        if (storedVehicleAccess != null) return storedVehicleAccess;
+
+        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin, Brand.DAIMLER_FLEET).get();
+        if (accessResponse.getError() != null)
+            throw new RuntimeException(accessResponse.getError().getDetail());
+
+        VehicleAccess serverVehicleAccess = accessResponse.getResponse();
+        vehicleAccessStore.store(serverVehicleAccess);
+        return serverVehicleAccess;
+    }
+
+    private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
+        Response<Bytes> diagnosticsResponse = hmkitFleet.sendCommand(
+                new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED),
+                vehicleAccess
+        ).get();
+
+        if (diagnosticsResponse.getError() != null)
+            throw new RuntimeException(diagnosticsResponse.getError().getTitle());
+
+        Command commandFromVehicle = CommandResolver.resolve(diagnosticsResponse.getResponse());
+
+        if (commandFromVehicle instanceof Diagnostics.State) {
+            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
+            System.out.println(format(
+                    "Got diagnostics response: %s", diagnostics.getOdometer().getValue().getValue()));
+        }
     }
 
     String getDate() {
