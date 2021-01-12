@@ -34,7 +34,6 @@ class ServiceAccountApiConfigurationStore {
                 .registerModule(new KotlinModule())
                 .registerModule(module);
 
-
         return om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
 

@@ -7,14 +7,6 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        if (project.hasProperty('devReadUser')) {
-            maven {
-                url "http://jfrog.high-mobility.com/artifactory/gradle-dev-local/"
-                credentials {
-                    username devReadUser
-                    password devReadPassword
-                }
-            }
-        }
+        maven { url "http://jfrog.high-mobility.com/artifactory/gradle-00/" }
     }
 }
