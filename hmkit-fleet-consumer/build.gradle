@@ -12,12 +12,11 @@ dependencies {
     if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
         if (Os.isFamily(Os.FAMILY_MAC)) {
             implementation "com.highmobility:hmkit-fleet:0-osx"
-        }
-        else {
+        } else {
             implementation "com.highmobility:hmkit-fleet:0"
         }
     } else {
-        implementation project(path: ':hmkit-fleet')
+        implementation project(':')
     }
 
     implementation 'com.highmobility:hmkit-auto-api:3.12.0-dev'

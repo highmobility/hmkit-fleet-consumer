@@ -1,4 +1,4 @@
-import com.highmobility.cryptok.AccessCertificate
+import com.highmobility.crypto.AccessCertificate
 import com.highmobility.value.Bytes
 import model.AccessToken
 import model.Brand

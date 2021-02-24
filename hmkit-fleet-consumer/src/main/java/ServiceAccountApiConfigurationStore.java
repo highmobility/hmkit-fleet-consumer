@@ -11,7 +11,7 @@ import com.highmobility.value.Bytes;
 import java.io.File;
 import java.io.IOException;
 /*
-use credentials.yaml to decode a ServiceAccountApiConfiguration object
+use credentials.yaml in resources folder to decode a ServiceAccountApiConfiguration object
 required keys:
 privateKey: ""
 apiKey: ""
