@@ -7,6 +7,18 @@ allprojects {
     repositories {
         jcenter()
         mavenCentral()
-        maven { url "http://jfrog.high-mobility.com/artifactory/gradle-00/" }
+        maven { url "http://jfrog.high-mobility.com/artifactory/gradle-release-local/" }
     }
+}
+
+ext {
+    depLocation = 1
+
+    ver = [
+            "hmkit-fleet": "0.0.1",
+    ]
+
+    deps = [
+            "hmkit": "com.highmobility:hmkit-fleet:${ver."hmkit-fleet"}"
+    ]
 }

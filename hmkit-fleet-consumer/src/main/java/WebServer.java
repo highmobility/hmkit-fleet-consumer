@@ -90,7 +90,7 @@ class WebServer {
         Response<ClearanceStatus> response =
                 hmkitFleet.requestClearance(
                         testVin,
-                        Brand.DAIMLER_FLEET,
+                        Brand.MERCEDES_BENZ,
                         List.of(measure)
                 ).get();
 

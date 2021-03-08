@@ -10,11 +10,7 @@ version '1.0-SNAPSHOT'
 
 dependencies {
     if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
-        if (Os.isFamily(Os.FAMILY_MAC)) {
-            implementation "com.highmobility:hmkit-fleet:0-osx"
-        } else {
-            implementation "com.highmobility:hmkit-fleet:0"
-        }
+        implementation deps.hmkit
     } else {
         implementation project(':')
     }
@@ -30,6 +26,6 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0"
 
     // serialise/deserialise VehicleAccess object with kotlin
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0"
     implementation "com.charleskorn.kaml:kaml:0.26.0"
 }
