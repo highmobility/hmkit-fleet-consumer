@@ -120,7 +120,7 @@ class WebServer {
         VehicleAccess storedVehicleAccess = vehicleAccessStore.read(vin);
         if (storedVehicleAccess != null) return storedVehicleAccess;
 
-        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin, Brand.DAIMLER_FLEET).get();
+        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin).get();
         if (accessResponse.getError() != null)
             throw new RuntimeException(accessResponse.getError().getDetail());
 
