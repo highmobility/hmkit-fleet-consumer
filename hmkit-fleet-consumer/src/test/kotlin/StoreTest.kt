@@ -23,14 +23,18 @@
  */
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.value.Bytes
+import io.mockk.*
 import model.AccessToken
-import model.Brand
 import model.VehicleAccess
 import org.junit.Test
+import java.nio.file.Files
 
 class StoreTest {
     @Test
     fun storeVehicleAccess() {
+        mockkStatic(Files::class)
+        every { Files.write(any(), any<ByteArray>(), any()) } returns mockk()
+
         val store = VehicleAccessStore()
         val vehicleAccess = getTestVehicleAccess()
         store.store(vehicleAccess)
