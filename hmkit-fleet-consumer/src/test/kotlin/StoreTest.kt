@@ -42,7 +42,6 @@ class StoreTest {
         val cert = AccessCertificate(certBytes)
         return VehicleAccess(
             "000000000000000000",
-            Brand.DAIMLER_FLEET,
             AccessToken("1", "1", "1", 1, "1"),
             cert
         )
