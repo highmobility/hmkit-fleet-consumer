@@ -47,7 +47,7 @@ import network.Response;
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "C0NNECT0000000006";
+    final String testVin = "C0NNECT0000000007";
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();

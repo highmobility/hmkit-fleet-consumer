@@ -15,7 +15,7 @@ ext {
     depLocation = 1
 
     ver = [
-            "hmkit-fleet"   : "0.1.0",
+            "hmkit-fleet"   : "0.1.1",
             "hmkit-crypto"  : "0.0.1",
             "hmkit-auto-api": "3.12.fleet-0",
     ]
