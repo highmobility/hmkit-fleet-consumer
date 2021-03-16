@@ -33,9 +33,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 
 import model.Brand;
 import model.ClearanceStatus;
@@ -59,7 +57,8 @@ class WebServer {
 
     void start() throws ExecutionException, InterruptedException, IOException {
         logger.info("Start " + getDate());
-        hmkitFleet.setEnvironment(HMKitFleet.Environment.DEV);
+        HMKitFleet.Environment.webUrl = "https://api.develop.high-mobility.net/v1";
+
         hmkitFleet.setConfiguration(configurationStore.read());
 
 //        requestClearances();
