@@ -85,12 +85,12 @@ class WebServer {
 
     private void requestClearances() throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
-
+        List<ControlMeasure> measures = List.of(measure);
         Response<ClearanceStatus> response =
                 hmkitFleet.requestClearance(
                         testVin,
                         Brand.MERCEDES_BENZ,
-                        List.of(measure)
+                        measures
                 ).get();
 
         if (response.getResponse() != null) {

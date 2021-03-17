@@ -32,6 +32,11 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation "io.mockk:mockk:1.10.6"
 }
+
+compileJava {
+    sourceCompatibility = 11
+}
+
 application {
     mainClassName "WebServer"
 }
