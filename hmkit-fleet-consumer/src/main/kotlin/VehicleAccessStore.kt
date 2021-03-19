@@ -49,8 +49,12 @@ class VehicleAccessStore {
                     VehicleAccess.serializer(),
                     content
                 )
-            if (vehicleAccess.vin == vin) vehicleAccess
-            null
+            
+            if (vehicleAccess.vin == vin) {
+                vehicleAccess
+            } else {
+                null
+            }
         } catch (e: Exception) {
             null
         }
