@@ -40,7 +40,7 @@ class VehicleAccessStore {
         Files.write(path, encoded.toByteArray(), StandardOpenOption.CREATE)
     }
 
-    fun read(vin:String): VehicleAccess? {
+    fun read(vin: String): VehicleAccess? {
         return try {
             val content = Files.readString(path)
 
@@ -49,8 +49,8 @@ class VehicleAccessStore {
                     VehicleAccess.serializer(),
                     content
                 )
-
-            vehicleAccess
+            if (vehicleAccess.vin == vin) vehicleAccess
+            null
         } catch (e: Exception) {
             null
         }

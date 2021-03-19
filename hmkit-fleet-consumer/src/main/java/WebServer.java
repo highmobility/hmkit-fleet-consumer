@@ -74,12 +74,17 @@ class WebServer {
 
     private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
         VehicleAccess vehicleAccess = vehicleAccessStore.read(vin);
-        Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
 
-        if (response.getError() != null) {
-            logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
+        if (vehicleAccess == null) {
+            logger.warn(format("Vehicle access does not exist for %s", vin));
         } else {
-            logger.info(format("revokeClearance success"));
+            Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
+
+            if (response.getError() != null) {
+                logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
+            } else {
+                logger.info(format("revokeClearance success"));
+            }
         }
     }
 
@@ -92,7 +97,6 @@ class WebServer {
                         Brand.MERCEDES_BENZ,
                         measures
                 ).get();
-
         if (response.getResponse() != null) {
             logger.info(format("requestClearances response: %s", response.getResponse()));
         } else {
