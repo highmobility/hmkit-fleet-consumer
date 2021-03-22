@@ -45,7 +45,7 @@ import network.Response;
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "C0NNECT0000000007";
+    final String testVin = "C0NNECT0000000009";
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
@@ -57,15 +57,15 @@ class WebServer {
 
     void start() throws ExecutionException, InterruptedException, IOException {
         logger.info("Start " + getDate());
-        HMKitFleet.Environment.webUrl = "https://api.develop.high-mobility.net/v1";
 
         hmkitFleet.setConfiguration(configurationStore.read());
 
-//        requestClearances();
-//        getClearanceStatuses();
+//        requestClearance(testVin);
 
-        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
-        getVehicleDiagnostics(vehicleAccess);
+        getClearanceStatuses();
+
+//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
+//        getVehicleDiagnostics(vehicleAccess);
 
 //        revokeClearance(testVin);
 
@@ -88,15 +88,16 @@ class WebServer {
         }
     }
 
-    private void requestClearances() throws ExecutionException, InterruptedException {
+    private void requestClearance(String vin) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = List.of(measure);
         Response<ClearanceStatus> response =
                 hmkitFleet.requestClearance(
-                        testVin,
+                        vin,
                         Brand.MERCEDES_BENZ,
                         measures
                 ).get();
+
         if (response.getResponse() != null) {
             logger.info(format("requestClearances response: %s", response.getResponse()));
         } else {
@@ -123,7 +124,7 @@ class WebServer {
         VehicleAccess storedVehicleAccess = vehicleAccessStore.read(vin);
         if (storedVehicleAccess != null) return storedVehicleAccess;
 
-        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(testVin).get();
+        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(vin).get();
         if (accessResponse.getError() != null)
             throw new RuntimeException(accessResponse.getError().getDetail());
 
