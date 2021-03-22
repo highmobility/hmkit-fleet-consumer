@@ -36,13 +36,15 @@ import java.io.IOException;
 /*
 use credentials.yaml in resources folder to decode a ServiceAccountApiConfiguration object
 required keys:
-privateKey: ""
-apiKey: ""
+serviceAccountPrivateKey: ""
+serviceAccountApiKey: ""
+
 clientCertificate: ""
 clientPrivateKey: ""
-clientId: ""
-clientSecret: ""
- */
+
+oauthClientId: ""
+oauthClientSecret: ""
+*/
 
 class ServiceAccountApiConfigurationStore {
     String path = getClass().getClassLoader().getResource("credentials.yaml").getFile();
