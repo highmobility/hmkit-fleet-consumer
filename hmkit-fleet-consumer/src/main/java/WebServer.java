@@ -151,6 +151,12 @@ class WebServer {
             logger.info(format(
                     "Got diagnostics response: %s",
                     diagnostics.getSpeed().getValue().getValue()));
+        } else if (commandFromVehicle instanceof FailureMessage.State) {
+            FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
+            logger.info(format(
+                    "Got FailureMessage response: %s, %s",
+                    failureMessage.getFailureReason().getValue(),
+                    failureMessage.getFailureDescription().getValue()));
         }
     }
 
