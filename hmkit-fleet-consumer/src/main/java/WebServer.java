@@ -21,9 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
+import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;

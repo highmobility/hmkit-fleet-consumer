@@ -1,19 +1,7 @@
-### Requirements
-
-Java 11 runtime
-
 # HMKit Fleet Consumer
 
 HMKit Fleet is a Kotlin/Java library that combines different API-s: OAuth, Service Account API and
 Telematics API to help car companies manage their fleet.
-
-# Table of contents
-
-* [Requirements](#Requirements)
-* [Architecture](#Architecture)
-* [Setup](#Setup)
-* [Contributing](#Contributing)
-* [Licence](#Licence)
 
 ### Requirements
 
@@ -21,8 +9,7 @@ Java 11+
 
 ### Architecture
 
-HMKit Fleet Consumer is a Java application that provides examples about how to use Fleet SDK
-methods.
+Java app that can be run with gradle or within an IDE.
 
 ### Setup
 
