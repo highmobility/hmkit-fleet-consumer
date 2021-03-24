@@ -6,7 +6,6 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        maven { url "http://jfrog.high-mobility.com/artifactory/gradle-release-local/" }
     }
 }
 
