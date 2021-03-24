@@ -20,10 +20,10 @@ Java app that can be run with gradle or within an IDE.
   of `configurationStore.read()`
 * run the WebServer.java main() method with `./gradlew run` or withing your IDE.
 
+### License
+
+This repository is using the MIT license. See more in 📘[LICENSE](LICENSE)
+
 ### Contributing
 
-Before starting please read our contribution rules 📘[Contributing](CONTRIBUTE.md)
-
-### Licence
-
-This repository is using MIT licence. See more in 📘[LICENCE](LICENCE.md)
+Before starting, please read our contribution rules 📘[Contributing](CONTRIBUTING.md)
