@@ -62,7 +62,7 @@ class ServiceAccountApiConfigurationStore {
         return om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
 
-    private class DeviceCertificateSerialiser extends StdDeserializer<DeviceCertificate> {
+    private static class DeviceCertificateSerialiser extends StdDeserializer<DeviceCertificate> {
         public DeviceCertificateSerialiser() {
             this(null);
         }
