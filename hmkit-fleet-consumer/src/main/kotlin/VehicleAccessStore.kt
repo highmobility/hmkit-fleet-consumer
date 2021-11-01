@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 import com.charleskorn.kaml.Yaml
-import model.VehicleAccess
+import com.highmobility.hmkitfleet.model.VehicleAccess
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption

@@ -24,8 +24,8 @@
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.value.Bytes
 import io.mockk.*
-import model.AccessToken
-import model.VehicleAccess
+import com.highmobility.hmkitfleet.model.AccessToken
+import com.highmobility.hmkitfleet.model.VehicleAccess
 import org.junit.Test
 import java.nio.file.Files
 

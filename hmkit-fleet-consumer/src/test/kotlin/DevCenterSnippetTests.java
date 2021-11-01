@@ -8,12 +8,12 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import model.Brand;
-import model.ClearanceStatus;
-import model.ControlMeasure;
-import model.Odometer;
-import model.VehicleAccess;
-import network.Response;
+import com.highmobility.hmkitfleet.model.Brand;
+import com.highmobility.hmkitfleet.model.ClearanceStatus;
+import com.highmobility.hmkitfleet.model.ControlMeasure;
+import com.highmobility.hmkitfleet.model.Odometer;
+import com.highmobility.hmkitfleet.model.VehicleAccess;
+import com.highmobility.hmkitfleet.network.Response;
 
 import static java.lang.String.format;
 

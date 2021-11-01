@@ -26,6 +26,7 @@ import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
+import com.highmobility.hmkitfleet.HMKitFleet;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
@@ -37,17 +38,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import model.Brand;
-import model.ClearanceStatus;
-import model.ControlMeasure;
-import model.Odometer;
-import model.VehicleAccess;
-import network.Response;
+import com.highmobility.hmkitfleet.model.Brand;
+import com.highmobility.hmkitfleet.model.ClearanceStatus;
+import com.highmobility.hmkitfleet.model.ControlMeasure;
+import com.highmobility.hmkitfleet.model.Odometer;
+import com.highmobility.hmkitfleet.model.VehicleAccess;
+import com.highmobility.hmkitfleet.network.Response;
 
 import static java.lang.String.format;
 
 class WebServer {
     final String testVin = "C0NNECT0000000009";
+    final String testVin2 = "C0NNECT0000000010";
+
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
@@ -63,13 +66,14 @@ class WebServer {
         hmkitFleet.setConfiguration(configurationStore.read());
 
 //        requestClearance(testVin);
+//        requestClearance(testVin2);
 
-        getClearanceStatuses();
+//        getClearanceStatuses();
 
-//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
-//        getVehicleDiagnostics(vehicleAccess);
+        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
+        getVehicleDiagnostics(vehicleAccess);
 
-//        revokeClearance(testVin);
+//        revokeClearance(testVin2);
 
         logger.info("End: " + getDate());
     }
@@ -93,6 +97,7 @@ class WebServer {
     private void requestClearance(String vin) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = List.of(measure);
+
         Response<ClearanceStatus> response =
                 hmkitFleet.requestClearance(
                         vin,

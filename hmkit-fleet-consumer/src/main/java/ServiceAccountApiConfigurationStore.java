@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import com.highmobility.crypto.DeviceCertificate;
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
 import com.highmobility.value.Bytes;
 
 import java.io.File;
