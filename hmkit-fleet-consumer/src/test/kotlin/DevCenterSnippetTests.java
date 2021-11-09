@@ -1,6 +1,8 @@
 import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
+import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
