@@ -27,6 +27,7 @@ import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
@@ -98,7 +99,7 @@ class WebServer {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = List.of(measure);
 
-        Response<ClearanceStatus> response =
+        Response<RequestClearanceResponse> response =
                 hmkitFleet.requestClearance(
                         vin,
                         Brand.MERCEDES_BENZ,
