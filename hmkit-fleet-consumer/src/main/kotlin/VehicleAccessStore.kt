@@ -23,20 +23,19 @@
  */
 import com.charleskorn.kaml.Yaml
 import com.highmobility.hmkitfleet.model.VehicleAccess
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
 class VehicleAccessStore {
-    val path = Paths.get("vehicleAccess.yaml")
+    private val path = Paths.get("vehicleAccess.yaml")
 
     fun store(vehicleAccess: VehicleAccess) {
-        val encoded = Yaml.default.encodeToString(
-            VehicleAccess.serializer(),
-            vehicleAccess
-        )
+        val encoded = Yaml.default.encodeToString(vehicleAccess)
 
-        // TODO: this should be stored securely
+        // In a real scenario VehicleAccess should be stored securely
         Files.write(path, encoded.toByteArray(), StandardOpenOption.CREATE)
     }
 
@@ -44,12 +43,8 @@ class VehicleAccessStore {
         return try {
             val content = Files.readString(path)
 
-            val vehicleAccess =
-                Yaml.default.decodeFromString(
-                    VehicleAccess.serializer(),
-                    content
-                )
-            
+            val vehicleAccess = Yaml.default.decodeFromString<VehicleAccess>(content)
+
             if (vehicleAccess.vin == vin) {
                 vehicleAccess
             } else {

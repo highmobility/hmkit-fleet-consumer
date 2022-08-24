@@ -68,31 +68,13 @@ class WebServer {
 
 //        requestClearance(testVin);
 //        requestClearance(testVin2);
-
 //        getClearanceStatuses();
-
-        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
-        getVehicleDiagnostics(vehicleAccess);
-
+//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
+//        getVehicleDiagnostics(vehicleAccess);
 //        revokeClearance(testVin2);
+//        deleteClearance(testVin2);
 
         logger.info("End: " + getDate());
-    }
-
-    private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
-        VehicleAccess vehicleAccess = vehicleAccessStore.read(vin);
-
-        if (vehicleAccess == null) {
-            logger.warn(format("Vehicle access does not exist for %s", vin));
-        } else {
-            Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
-
-            if (response.getError() != null) {
-                logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
-            } else {
-                logger.info(format("revokeClearance success"));
-            }
-        }
     }
 
     private void requestClearance(String vin) throws ExecutionException, InterruptedException {
@@ -167,6 +149,32 @@ class WebServer {
                     failureMessage.getFailureDescription().getValue()));
         }
     }
+
+  private void deleteClearance(String vin) throws ExecutionException, InterruptedException {
+      Response<RequestClearanceResponse> response = hmkitFleet.deleteClearance(vin).get();
+
+      if (response.getError() != null) {
+        logger.info(format("deleteClearance error: %s", response.getError().getDetail()));
+      } else {
+        logger.info("deleteClearance success %s");
+      }
+  }
+
+  private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
+    VehicleAccess vehicleAccess = vehicleAccessStore.read(vin);
+
+    if (vehicleAccess == null) {
+      logger.warn(format("Vehicle access does not exist for %s", vin));
+    } else {
+      Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
+
+      if (response.getError() != null) {
+        logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
+      } else {
+        logger.info(format("revokeClearance success"));
+      }
+    }
+  }
 
     String getDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_TIME;
