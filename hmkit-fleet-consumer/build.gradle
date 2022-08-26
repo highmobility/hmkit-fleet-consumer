@@ -27,7 +27,7 @@ dependencies {
     implementation 'com.charleskorn.kaml:kaml:0.47.0'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
-    testImplementation 'io.mockk:mockk:1.12.7'
+    testImplementation 'io.mockk:mockk:1.10.6'
 }
 
 compileJava {

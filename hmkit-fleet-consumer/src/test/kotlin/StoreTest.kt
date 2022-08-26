@@ -32,12 +32,12 @@ import java.nio.file.Files
 class StoreTest {
     @Test
     fun storeVehicleAccess() {
-        mockkStatic(Files::class)
-        every { Files.write(any(), any<ByteArray>(), any()) } returns mockk()
-
-        val store = VehicleAccessStore()
-        val vehicleAccess = getTestVehicleAccess()
-        store.store(vehicleAccess)
+        mockkStatic(Files::class) {
+            every { Files.write(any(), any<ByteArray>(), any()) } returns mockk()
+            val store = VehicleAccessStore()
+            val vehicleAccess = getTestVehicleAccess()
+            store.store(vehicleAccess)
+        }
     }
 
     fun getTestVehicleAccess(): VehicleAccess {
