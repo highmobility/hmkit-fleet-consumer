@@ -24,7 +24,7 @@ dependencies {
 
     // serialise/deserialise VehicleAccess object with kotlin
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0"
-    implementation "com.charleskorn.kaml:kaml:0.26.0"
+    implementation "com.charleskorn.kaml:kaml:0.29.0"
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation "io.mockk:mockk:1.10.6"
