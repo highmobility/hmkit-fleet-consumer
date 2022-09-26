@@ -22,7 +22,7 @@ Java app that can be run with gradle or within an IDE.
 
 ### vehicleAccess.json
 
-* Optionally add pre-existing VehicleAccess.json at project root level with format:
+* Optionally add pre-existing vehicleAccess.json at project root level with format:
 ```
 {
   "vin": "VIN123",
