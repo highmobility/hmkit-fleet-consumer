@@ -20,6 +20,24 @@ Java app that can be run with gradle or within an IDE.
   of `configurationStore.read()`
 * run the WebServer.java main() method with `./gradlew run` or withing your IDE.
 
+### vehicleAccess.json
+
+* Optionally add pre-existing VehicleAccess.json at project root level with format:
+```
+{
+  "vin": "VIN123",
+  "accessToken": {
+    "token_type": "bearer",
+    "scope": "windows.get.positions vehicle_location.get.altitude vehicle_location.get.heading vehicle_location.get.coordinates usage.get.acceleration_evaluation trunk.get.position trunk.get.lock rooftop_control.get.sunroof_state rooftop_control.get.convertible_roof_state maintenance.get.kilometers_to_next_service maintenance.get.days_to_next_service lights.get.interior_lights lights.get.reading_lamps ignition.get.status fueling.get.gas_flap_lock doors.get.locks_state doors.get.positions doors.get.locks diagnostics.get.odometer diagnostics.get.tire_pressures diagnostics.get.battery_voltage diagnostics.get.fuel_level diagnostics.get.speed diagnostics.get.mileage charging.get.status charging.get.charging_rate_kw charging.get.battery_level charging.get.estimated_range",
+    "refresh_token": "00000000-0000-0000-0000-000000000000",
+    "expires_in": 3600,
+    "access_token": "00000000-0000-0000-0000-000000000000"
+  },
+  "accessCertificate": "01786D6266A6....hex bytes"
+}
+
+```
+
 ### License
 
 This repository is using the MIT license. See more in 📘[LICENSE](LICENSE)

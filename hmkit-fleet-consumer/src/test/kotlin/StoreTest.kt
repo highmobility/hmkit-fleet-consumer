@@ -35,7 +35,7 @@ class StoreTest {
         mockkStatic(Files::class)
         every { Files.write(any(), any<ByteArray>(), any()) } returns mockk()
 
-        val store = VehicleAccessStore()
+        val store = KotlinVehicleAccessStore()
         val vehicleAccess = getTestVehicleAccess()
         store.store(vehicleAccess)
     }
@@ -45,9 +45,7 @@ class StoreTest {
             Bytes("AXRtY3PCraQBV0wVyyE9BPBK+P+iozdRW5wu2RpzHcgM8Wtfr+M/Opgf4uQjyKEkhC1VghuVLYF/VnO0XiiU+uz6I3DQNYs2+GsaXOWnTIDuUrU8SivxFAwJCQQZDAkJBBAQB//9/+//////HwAAAAAAj3wuvOhRoyk9edcp8LhAfL8hd75q/Tdb4pLgxC3GPGXuZcOuPdxrbxQvKc+8VMQPNQVffbCFD3Mj8c0QpKEUBg==")
         val cert = AccessCertificate(certBytes)
         return VehicleAccess(
-            "000000000000000000",
-            AccessToken("1", "1", "1", 1, "1"),
-            cert
+            "000000000000000000", AccessToken("1", "1", "1", 1, "1"), cert
         )
     }
 }

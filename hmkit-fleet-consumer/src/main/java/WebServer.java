@@ -47,7 +47,7 @@ import network.Response;
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "C0NNECT0000000009";
+    final String testVin = "VIN123";
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
@@ -64,23 +64,23 @@ class WebServer {
 
 //        requestClearance(testVin);
 
-        getClearanceStatuses();
+//        getClearanceStatuses();
 
 //        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
 //        getVehicleDiagnostics(vehicleAccess);
-
 //        revokeClearance(testVin);
+        revokeClearance(testVin);
 
         logger.info("End: " + getDate());
     }
 
     private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
-        VehicleAccess vehicleAccess = vehicleAccessStore.read(vin);
+        var vehicleAccess = vehicleAccessStore.read(vin);
 
-        if (vehicleAccess == null) {
+        if (vehicleAccess.isEmpty()) {
             logger.warn(format("Vehicle access does not exist for %s", vin));
         } else {
-            Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess).get();
+            Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess.get()).get();
 
             if (response.getError() != null) {
                 logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
@@ -122,9 +122,9 @@ class WebServer {
         }
     }
 
-    private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException {
-        VehicleAccess storedVehicleAccess = vehicleAccessStore.read(vin);
-        if (storedVehicleAccess != null) return storedVehicleAccess;
+    private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException, IOException {
+        var storedVehicleAccess = vehicleAccessStore.read(vin);
+        if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
 
         Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(vin).get();
         if (accessResponse.getError() != null)

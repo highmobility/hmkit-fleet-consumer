@@ -27,13 +27,12 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 
-class VehicleAccessStore {
+class KotlinVehicleAccessStore {
     val path = Paths.get("vehicleAccess.yaml")
 
     fun store(vehicleAccess: VehicleAccess) {
         val encoded = Yaml.default.encodeToString(
-            VehicleAccess.serializer(),
-            vehicleAccess
+            VehicleAccess.serializer(), vehicleAccess
         )
 
         // TODO: this should be stored securely
@@ -44,12 +43,10 @@ class VehicleAccessStore {
         return try {
             val content = Files.readString(path)
 
-            val vehicleAccess =
-                Yaml.default.decodeFromString(
-                    VehicleAccess.serializer(),
-                    content
-                )
-            
+            val vehicleAccess = Yaml.default.decodeFromString(
+                VehicleAccess.serializer(), content
+            )
+
             if (vehicleAccess.vin == vin) {
                 vehicleAccess
             } else {

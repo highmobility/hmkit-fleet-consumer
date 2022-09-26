@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,8 +57,8 @@ class ServiceAccountApiConfigurationStore {
         module.addDeserializer(DeviceCertificate.class, new DeviceCertificateSerialiser());
 
         ObjectMapper om = new ObjectMapper(new YAMLFactory())
-                .registerModule(new KotlinModule())
-                .registerModule(module);
+          .registerModule(new KotlinModule())
+          .registerModule(module);
 
         return om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
