@@ -3,11 +3,14 @@ import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.hmkitfleet.HMKitFleet;
 import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import com.highmobility.hmkitfleet.model.Brand;
@@ -25,12 +28,12 @@ class DevCenterSnippetTests {
     // https://docs.high-mobility.com/guides/getting-started/fleet/
     void snippet() {
         ServiceAccountApiConfiguration configuration = new ServiceAccountApiConfiguration(
-                "", // Add Service Account API Key here
-                "", // Add Service Account Private Key here
-                "[CLIENT CERTIFICATE]",
-                "[CLIENT PRIVATE KEY]",
-                "", // Add OAuth2 Client ID here
-                ""  // Add OAuth2 Client Secret here
+          "", // Add Service Account API Key here
+          "", // Add Service Account Private Key here
+          "[CLIENT CERTIFICATE]",
+          "[CLIENT PRIVATE KEY]",
+          "", // Add OAuth2 Client ID here
+          ""  // Add OAuth2 Client Secret here
         );
         HMKitFleet.INSTANCE.setConfiguration(configuration);
     }
@@ -40,8 +43,8 @@ class DevCenterSnippetTests {
     String vin = "";
 
     void one() throws ExecutionException, InterruptedException {
-        Response<ClearanceStatus> response =
-                hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ).get();
+        Response<RequestClearanceResponse> response =
+          hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ).get();
 
         if (response.getResponse() != null) {
             logger.info(format("requestClearances response: %s", response.getResponse()));
@@ -54,8 +57,8 @@ class DevCenterSnippetTests {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = List.of(measure);
 
-        Response<ClearanceStatus> response =
-                hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ, measures).get();
+        Response<RequestClearanceResponse> response =
+          hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ, measures).get();
     }
 
     void getClearanceStatuses() throws ExecutionException, InterruptedException {
@@ -65,8 +68,8 @@ class DevCenterSnippetTests {
             logger.info(format("getClearanceStatuses response"));
             for (ClearanceStatus status : response.getResponse()) {
                 logger.info(format("status: %s:%s",
-                        status.getVin(),
-                        status.getStatus()));
+                  status.getVin(),
+                  status.getStatus()));
             }
         } else {
             logger.info(format("getClearanceStatuses error: %s", response.getError().getTitle()));
@@ -76,10 +79,10 @@ class DevCenterSnippetTests {
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
 
-    VehicleAccess three() throws ExecutionException, InterruptedException {
+    VehicleAccess three() throws ExecutionException, InterruptedException, IOException {
 // use the stored VehicleAccess if it exists
-        VehicleAccess storedVehicleAccess = vehicleAccessStore.read(vin);
-        if (storedVehicleAccess != null) return storedVehicleAccess;
+        Optional<VehicleAccess> storedVehicleAccess = vehicleAccessStore.read(vin);
+        if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
 
 // download VehicleAccess if it does not exist
         Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(vin).get();
@@ -99,8 +102,8 @@ class DevCenterSnippetTests {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
         Response<Bytes> response = hmkitFleet.sendCommand(
-                getVehicleSpeed,
-                vehicleAccess
+          getVehicleSpeed,
+          vehicleAccess
         ).get();
 
         if (response.getError() != null)
@@ -111,8 +114,8 @@ class DevCenterSnippetTests {
         if (commandFromVehicle instanceof Diagnostics.State) {
             Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
             logger.info(format(
-                    "Got diagnostics response: %s",
-                    diagnostics.getSpeed().getValue().getValue()));
+              "Got diagnostics response: %s",
+              diagnostics.getSpeed().getValue().getValue()));
         }
     }
 
@@ -121,7 +124,7 @@ class DevCenterSnippetTests {
 
         if (response.getError() != null) {
             logger.info(format("revokeClearance error: %s",
-                    response.getError().getDetail()));
+              response.getError().getDetail()));
         } else {
             logger.info(format("revokeClearance success"));
         }
