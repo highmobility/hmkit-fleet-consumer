@@ -1,13 +1,13 @@
 plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
     id 'application'
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
+    if (!project.hasProperty('depLocation') || project.depLocation > 0) {
         implementation deps.hmkit
     } else {
         implementation project(':')
@@ -15,19 +15,20 @@ dependencies {
 
     implementation deps.autoApi
 
-    implementation 'org.slf4j:slf4j-simple:1.7.30'
+    implementation 'org.slf4j:slf4j-simple:1.7.36'
 
-    // deserialise ServiceAccountConfiguration yaml
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.12.0"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.12.0"
+    // deserialize ServiceAccountConfiguration yaml
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3'
 
-    // serialise/deserialise VehicleAccess object with kotlin
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0"
-    implementation "com.charleskorn.kaml:kaml:0.29.0"
+
+    // serialise/deserialize VehicleAccess object with kotlin
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
+    implementation 'com.charleskorn.kaml:kaml:0.47.0'
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
-    testImplementation "io.mockk:mockk:1.10.6"
+    testImplementation 'io.mockk:mockk:1.10.6'
 }
 
 compileJava {

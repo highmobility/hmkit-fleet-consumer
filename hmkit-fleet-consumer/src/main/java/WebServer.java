@@ -26,6 +26,9 @@ import com.highmobility.autoapi.Command;
 import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
+import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
+import com.highmobility.hmkitfleet.model.VehicleAccess;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
@@ -37,17 +40,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import model.Brand;
-import model.ClearanceStatus;
-import model.ControlMeasure;
-import model.Odometer;
-import model.VehicleAccess;
-import network.Response;
+import com.highmobility.hmkitfleet.model.Brand;
+import com.highmobility.hmkitfleet.model.ClearanceStatus;
+import com.highmobility.hmkitfleet.model.ControlMeasure;
+import com.highmobility.hmkitfleet.model.Odometer;
+import com.highmobility.hmkitfleet.network.Response;
 
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "VIN123";
+    final String testVin = "C0NNECT0000000009";
+    final String testVin2 = "C0NNECT0000000010";
+
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
@@ -57,48 +61,32 @@ class WebServer {
         new WebServer().start();
     }
 
-    void start() throws ExecutionException, InterruptedException, IOException {
+    void start() throws IOException {
         logger.info("Start " + getDate());
 
         hmkitFleet.setConfiguration(configurationStore.read());
 
 //        requestClearance(testVin);
-
+//        requestClearance(testVin2);
 //        getClearanceStatuses();
-
 //        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
 //        getVehicleDiagnostics(vehicleAccess);
-//        revokeClearance(testVin);
-        revokeClearance(testVin);
+//        revokeClearance(testVin2);
+//        deleteClearance(testVin2);
 
         logger.info("End: " + getDate());
-    }
-
-    private void revokeClearance(String vin) throws ExecutionException, InterruptedException {
-        var vehicleAccess = vehicleAccessStore.read(vin);
-
-        if (vehicleAccess.isEmpty()) {
-            logger.warn(format("Vehicle access does not exist for %s", vin));
-        } else {
-            Response<Boolean> response = hmkitFleet.revokeClearance(vehicleAccess.get()).get();
-
-            if (response.getError() != null) {
-                logger.info(format("revokeClearance error: %s", response.getError().getDetail()));
-            } else {
-                logger.info(format("revokeClearance success"));
-            }
-        }
     }
 
     private void requestClearance(String vin) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = List.of(measure);
-        Response<ClearanceStatus> response =
-                hmkitFleet.requestClearance(
-                        vin,
-                        Brand.MERCEDES_BENZ,
-                        measures
-                ).get();
+
+        Response<RequestClearanceResponse> response =
+          hmkitFleet.requestClearance(
+            vin,
+            Brand.MERCEDES_BENZ,
+            measures
+          ).get();
 
         if (response.getResponse() != null) {
             logger.info(format("requestClearances response: %s", response.getResponse()));
@@ -111,11 +99,11 @@ class WebServer {
         Response<List<ClearanceStatus>> response = hmkitFleet.getClearanceStatuses().get();
 
         if (response.getResponse() != null) {
-            logger.info(format("getClearanceStatuses response"));
+            logger.info("getClearanceStatuses response");
             for (ClearanceStatus status : response.getResponse()) {
                 logger.info(format("status: %s:%s",
-                        status.getVin(),
-                        status.getStatus()));
+                  status.getVin(),
+                  status.getStatus()));
             }
         } else {
             logger.info(format("getClearanceStatuses error: %s", response.getError().getTitle()));
@@ -139,8 +127,8 @@ class WebServer {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
         Response<Bytes> response = hmkitFleet.sendCommand(
-                getVehicleSpeed,
-                vehicleAccess
+          getVehicleSpeed,
+          vehicleAccess
         ).get();
 
         if (response.getError() != null)
@@ -151,14 +139,24 @@ class WebServer {
         if (commandFromVehicle instanceof Diagnostics.State) {
             Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
             logger.info(format(
-                    "Got diagnostics response: %s",
-                    diagnostics.getSpeed().getValue().getValue()));
+              "Got diagnostics response: %s",
+              diagnostics.getSpeed().getValue().getValue()));
         } else if (commandFromVehicle instanceof FailureMessage.State) {
             FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
             logger.info(format(
-                    "Got FailureMessage response: %s, %s",
-                    failureMessage.getFailureReason().getValue(),
-                    failureMessage.getFailureDescription().getValue()));
+              "Got FailureMessage response: %s, %s",
+              failureMessage.getFailureReason().getValue(),
+              failureMessage.getFailureDescription().getValue()));
+        }
+    }
+
+    private void deleteClearance(String vin) throws ExecutionException, InterruptedException {
+        Response<RequestClearanceResponse> response = hmkitFleet.deleteClearance(vin).get();
+
+        if (response.getError() != null) {
+            logger.info(format("deleteClearance error: %s", response.getError().getDetail()));
+        } else {
+            logger.info("deleteClearance success %s");
         }
     }
 

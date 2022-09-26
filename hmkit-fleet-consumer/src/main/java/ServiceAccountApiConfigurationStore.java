@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import com.highmobility.crypto.DeviceCertificate;
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
 import com.highmobility.value.Bytes;
 
 import java.io.File;
@@ -63,7 +64,7 @@ class ServiceAccountApiConfigurationStore {
         return om.readValue(credentialsFile, ServiceAccountApiConfiguration.class);
     }
 
-    private class DeviceCertificateSerialiser extends StdDeserializer<DeviceCertificate> {
+    private static class DeviceCertificateSerialiser extends StdDeserializer<DeviceCertificate> {
         public DeviceCertificateSerialiser() {
             this(null);
         }
