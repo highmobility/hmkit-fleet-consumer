@@ -22,6 +22,9 @@ import com.highmobility.hmkitfleet.network.Response;
 
 import static java.lang.String.format;
 
+// test this link manually
+// https://github.com/highmobility/hmkit-fleet-consumer/blob/main/hmkit-fleet-consumer/src/main/java/VehicleAccessStore.java#L27
+
 class DevCenterSnippetTests {
     // if this class fails to build, the relevant docs page needs to be updated
 
