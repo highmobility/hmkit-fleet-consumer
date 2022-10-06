@@ -25,10 +25,8 @@ import com.highmobility.crypto.AccessCertificate
 import com.highmobility.hmkitfleet.model.AccessToken
 import com.highmobility.hmkitfleet.model.VehicleAccess
 import com.highmobility.value.Bytes
-import io.mockk.*
 
 import org.junit.Test
-import java.nio.file.Files
 
 class StoreTest {
     // There is a bug currently with mockk: https://github.com/mockk/mockk/issues/368#issuecomment-1223549420
