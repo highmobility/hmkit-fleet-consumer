@@ -29,7 +29,6 @@ import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.hmkitfleet.model.VehicleAccess;
-import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +37,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import com.highmobility.hmkitfleet.model.Brand;
@@ -61,7 +61,7 @@ class WebServer {
         new WebServer().start();
     }
 
-    void start() throws IOException {
+    void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
 
         hmkitFleet.setConfiguration(configurationStore.read());
@@ -69,8 +69,8 @@ class WebServer {
 //        requestClearance(testVin);
 //        requestClearance(testVin2);
 //        getClearanceStatuses();
-//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
-//        getVehicleDiagnostics(vehicleAccess);
+        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
+        getVehicleDiagnostics(vehicleAccess);
 //        revokeClearance(testVin2);
 //        deleteClearance(testVin2);
 
@@ -126,15 +126,16 @@ class WebServer {
     private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
-        Response<Bytes> response = hmkitFleet.sendCommand(
+        var response = hmkitFleet.sendCommand(
           getVehicleSpeed,
           vehicleAccess
         ).get();
 
-        if (response.getError() != null)
-            throw new RuntimeException(response.getError().getTitle());
+        if (response.getErrors().size() > 0)
+            throw new RuntimeException(response.getErrors().get(0).getTitle());
 
-        Command commandFromVehicle = CommandResolver.resolve(response.getResponse());
+        var commandBytes = Objects.requireNonNull(response.getResponse()).getResponseData();
+        Command commandFromVehicle = CommandResolver.resolve(commandBytes);
 
         if (commandFromVehicle instanceof Diagnostics.State) {
             Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
