@@ -131,21 +131,27 @@ class WebServer {
           vehicleAccess
         ).get();
 
-        if (response.getErrors().size() > 0)
+        if (response.getResponse() == null) {
             throw new RuntimeException(response.getErrors().get(0).getTitle());
+        }
 
-        var commandBytes = Objects.requireNonNull(response.getResponse()).getResponseData();
-        Command commandFromVehicle = CommandResolver.resolve(commandBytes);
+        var telematicsResponse = response.getResponse();
 
-        if (commandFromVehicle instanceof Diagnostics.State) {
-            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
+        logger.info(format("Got telematics response: %s - %s", telematicsResponse.getMessage(), telematicsResponse.getStatus()));
+
+        Command commandFromVehicle = CommandResolver.resolve(telematicsResponse.getResponseData());
+
+        if (commandFromVehicle instanceof Diagnostics.State diagnostics) {
+            if (diagnostics.getSpeed().getValue() != null) {
+                logger.info(format(
+                  " > diagnostics.speed: %s",
+                  diagnostics.getSpeed().getValue().getValue()));
+            } else {
+                logger.info(format(" > diagnostics.bytes: %s", diagnostics));
+            }
+        } else if (commandFromVehicle instanceof FailureMessage.State failureMessage) {
             logger.info(format(
-              "Got diagnostics response: %s",
-              diagnostics.getSpeed().getValue().getValue()));
-        } else if (commandFromVehicle instanceof FailureMessage.State) {
-            FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
-            logger.info(format(
-              "Got FailureMessage response: %s, %s",
+              " > FailureMessage: %s, %s",
               failureMessage.getFailureReason().getValue(),
               failureMessage.getFailureDescription().getValue()));
         }
