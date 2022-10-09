@@ -45,6 +45,8 @@ import com.highmobility.hmkitfleet.model.ClearanceStatus;
 import com.highmobility.hmkitfleet.model.ControlMeasure;
 import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.network.Response;
+import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
+import com.highmobility.value.Bytes;
 
 import static java.lang.String.format;
 
@@ -127,14 +129,21 @@ class WebServer {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
         var response = hmkitFleet.sendCommand(
-          getVehicleSpeed,
+          new Bytes("0D11AF0003"),
           vehicleAccess
         ).get();
 
+        // First check if we have a telematics response
         if (response.getResponse() == null) {
-            throw new RuntimeException(response.getErrors().get(0).getTitle());
+            throw new RuntimeException(format("%s - %s", response.getErrors().get(0).getTitle(), response.getErrors().get(0).getDetail()));
         }
 
+        // Then check if the Telematics response is an error
+        if (response.getResponse().getStatus() != TelematicsCommandResponse.Status.OK) {
+            throw new RuntimeException(format("Telematics command response: %s - %s", response.getResponse().getStatus(), response.getResponse().getMessage()));
+        }
+
+        // Now we can be sure that the Telematics response is a command
         var telematicsResponse = response.getResponse();
 
         logger.info(format("Got telematics response: %s - %s", telematicsResponse.getMessage(), telematicsResponse.getStatus()));
