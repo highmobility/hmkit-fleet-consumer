@@ -61,14 +61,15 @@ class WebServer {
         new WebServer().start();
     }
 
-    void start() throws IOException {
+    void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
 
         hmkitFleet.setConfiguration(configurationStore.read());
 
 //        requestClearance(testVin);
 //        requestClearance(testVin2);
-//        getClearanceStatuses();
+        getClearanceStatuses();
+//        getClearanceStatus(testVin);
 //        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
 //        getVehicleDiagnostics(vehicleAccess);
 //        revokeClearance(testVin2);
@@ -109,6 +110,22 @@ class WebServer {
             logger.info(format("getClearanceStatuses error: %s", response.getError().getTitle()));
         }
     }
+
+
+    private void getClearanceStatus(String vin) throws ExecutionException, InterruptedException {
+        Response<ClearanceStatus> response = hmkitFleet.getClearanceStatus(vin).get();
+        var status = response.getResponse();
+
+        if (status != null) {
+            logger.info("getClearanceStatus response");
+            logger.info(format("status: %s:%s",
+              status.getVin(),
+              status.getStatus()));
+        } else {
+            logger.info(format("getClearanceStatus error: %s", response.getError().getTitle()));
+        }
+    }
+
 
     private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException, IOException {
         var storedVehicleAccess = vehicleAccessStore.read(vin);
