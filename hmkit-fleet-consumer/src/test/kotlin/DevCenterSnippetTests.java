@@ -4,6 +4,8 @@ import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.hmkitfleet.HMKitFleet;
 import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
+import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
+import com.highmobility.hmkitfleet.network.TelematicsResponse;
 import com.highmobility.value.Bytes;
 
 import org.slf4j.Logger;
@@ -104,15 +106,15 @@ class DevCenterSnippetTests {
     void sendTelematicsCommand() throws ExecutionException, InterruptedException {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
-        Response<Bytes> response = hmkitFleet.sendCommand(
+        TelematicsResponse response = hmkitFleet.sendCommand(
           getVehicleSpeed,
           vehicleAccess
         ).get();
 
-        if (response.getError() != null)
-            throw new RuntimeException(response.getError().getTitle());
+        if (response.getResponse() == null || response.getResponse().getStatus() != TelematicsCommandResponse.Status.OK)
+            throw new RuntimeException("There was an error");
 
-        Command commandFromVehicle = CommandResolver.resolve(response.getResponse());
+        Command commandFromVehicle = CommandResolver.resolve(response.getResponse().getResponseData());
 
         if (commandFromVehicle instanceof Diagnostics.State) {
             Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
