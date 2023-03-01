@@ -36,8 +36,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import com.highmobility.hmkitfleet.model.Brand;
@@ -46,6 +48,7 @@ import com.highmobility.hmkitfleet.model.ControlMeasure;
 import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.network.Response;
 import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
+import com.highmobility.hmkitfleet.network.TelematicsResponse;
 import com.highmobility.value.Bytes;
 
 import static java.lang.String.format;
@@ -82,7 +85,8 @@ class WebServer {
 
     private void requestClearance(String vin) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
-        List<ControlMeasure> measures = List.of(measure);
+        List<ControlMeasure> measures = new ArrayList<>();
+        measures.add(measure);
 
         Response<RequestClearanceResponse> response =
           hmkitFleet.requestClearance(
@@ -116,7 +120,7 @@ class WebServer {
 
     private void getClearanceStatus(String vin) throws ExecutionException, InterruptedException {
         Response<ClearanceStatus> response = hmkitFleet.getClearanceStatus(vin).get();
-        var status = response.getResponse();
+        ClearanceStatus status = response.getResponse();
 
         if (status != null) {
             logger.info("getClearanceStatus response");
@@ -130,7 +134,7 @@ class WebServer {
 
 
     private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException, IOException {
-        var storedVehicleAccess = vehicleAccessStore.read(vin);
+        Optional<VehicleAccess> storedVehicleAccess = vehicleAccessStore.read(vin);
         if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
 
         Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(vin).get();
@@ -145,7 +149,7 @@ class WebServer {
     private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
-        var response = hmkitFleet.sendCommand(
+        TelematicsResponse response = hmkitFleet.sendCommand(
           new Bytes("0D11AF0003"),
           vehicleAccess
         ).get();
@@ -161,13 +165,14 @@ class WebServer {
         }
 
         // Now we can be sure that the Telematics response is a command
-        var telematicsResponse = response.getResponse();
+        TelematicsCommandResponse telematicsResponse = response.getResponse();
 
         logger.info(format("Got telematics response: %s - %s", telematicsResponse.getMessage(), telematicsResponse.getStatus()));
 
         Command commandFromVehicle = CommandResolver.resolve(telematicsResponse.getResponseData());
 
-        if (commandFromVehicle instanceof Diagnostics.State diagnostics) {
+        if (commandFromVehicle instanceof Diagnostics.State) {
+            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
             if (diagnostics.getSpeed().getValue() != null) {
                 logger.info(format(
                   " > diagnostics.speed: %s",
@@ -175,7 +180,9 @@ class WebServer {
             } else {
                 logger.info(format(" > diagnostics.bytes: %s", diagnostics));
             }
-        } else if (commandFromVehicle instanceof FailureMessage.State failureMessage) {
+        } else if (commandFromVehicle instanceof FailureMessage.State) {
+            FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
+
             logger.info(format(
               " > FailureMessage: %s, %s",
               failureMessage.getFailureReason().getValue(),

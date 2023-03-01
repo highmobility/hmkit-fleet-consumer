@@ -31,8 +31,10 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.10.6'
 }
 
-compileJava {
-    sourceCompatibility = 17
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 application {

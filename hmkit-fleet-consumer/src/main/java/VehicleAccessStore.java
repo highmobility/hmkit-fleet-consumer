@@ -24,7 +24,7 @@ class VehicleAccessStore {
     Path path = Paths.get("vehicleAccess.json");
 
     public void store(VehicleAccess vehicleAccess) throws IOException {
-        var encoded = Json.Default.encodeToString(VehicleAccess.Companion.serializer(), vehicleAccess);
+        String encoded = Json.Default.encodeToString(VehicleAccess.Companion.serializer(), vehicleAccess);
 
         // TODO: store securely
         Files.write(path, encoded.getBytes(), StandardOpenOption.CREATE);
@@ -32,9 +32,11 @@ class VehicleAccessStore {
 
     public Optional<VehicleAccess> read(String vin) {
         try {
-            var content = Files.readString(path);
+            // read file from path
 
-            var vehicleAccess = Json.Default.decodeFromString(
+            String content = new String(Files.readAllBytes(path));
+
+            VehicleAccess vehicleAccess = Json.Default.decodeFromString(
               VehicleAccess.Companion.serializer(), content
             );
 
