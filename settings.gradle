@@ -1,3 +1,4 @@
 rootProject.name = 'hmkit-fleet-consumer'
 include 'hmkit-fleet-consumer'
+include 'vehicle-access-store'
 

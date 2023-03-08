@@ -5,7 +5,7 @@ Telematics API to help car companies manage their fleet.
 
 ### Requirements
 
-Java 11+
+Java 8+
 
 ### Architecture
 
@@ -37,6 +37,8 @@ Java app that can be run with gradle or within an IDE.
 }
 
 ```
+
+kotlinx.serialization library is used to parse the json file. This means you need to add Kotlin dependencies to the project. These dependencies are visible in the `vehicle-access-store/build.gradle` file. Separate module is used for `vehicle-access-store` to avoid adding Kotlin dependencies to the main project.
 
 ### License
 
