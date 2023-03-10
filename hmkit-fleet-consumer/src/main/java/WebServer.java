@@ -27,6 +27,7 @@ import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.model.EligibilityStatus;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.hmkitfleet.model.VehicleAccess;
 
@@ -69,11 +70,15 @@ class WebServer {
     void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
 
+        hmkitFleet.setEnvironment(HMKitFleet.Environment.SANDBOX);
         hmkitFleet.setConfiguration(configurationStore.read());
 
-//        requestClearance(testVin);
+        Brand brand = Brand.SANDBOX;
+        getEligibility("1HM9CY66SL1gNPGORE", brand);
+
+//        requestClearance("1HM9CY66SL1gNPGORE", brand);
 //        requestClearance(testVin2);
-        getClearanceStatuses();
+//        getClearanceStatuses();
 //        getClearanceStatus(testVin);
 //        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
 //        getVehicleDiagnostics(vehicleAccess);
@@ -83,7 +88,17 @@ class WebServer {
         logger.info("End: " + getDate());
     }
 
-    private void requestClearance(String vin) throws ExecutionException, InterruptedException {
+    private void getEligibility(String vin, Brand brand) throws ExecutionException, InterruptedException {
+        Response<EligibilityStatus> response = hmkitFleet.getEligibility(vin, brand).get();
+
+        if (response.getResponse() != null) {
+            logger.info(format("getEligibility response: %s", response.getResponse()));
+        } else {
+            logger.info(format("getEligibility error: %s", response.getError().getTitle()));
+        }
+    }
+
+    private void requestClearance(String vin, Brand brand) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = new ArrayList<>();
         measures.add(measure);
@@ -91,7 +106,7 @@ class WebServer {
         Response<RequestClearanceResponse> response =
           hmkitFleet.requestClearance(
             vin,
-            Brand.MERCEDES_BENZ,
+            brand,
             measures
           ).get();
 
