@@ -1,11 +1,22 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.7.20'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
     id 'application'
 }
 
+application {
+    mainClassName "WebServer"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
+}
+
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    // `vehicle-access-store` includes the serialization of the VehicleAccess object.
+    // It is included separately because serialization requires Kotlin dependencies. If you do not
+    // need to serialize the VehicleAccess object, you can remove this dependency.
+    implementation project(":vehicle-access-store")
 
     if (!project.hasProperty('depLocation') || project.depLocation > 0) {
         implementation deps.hmkit
@@ -22,21 +33,6 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3'
 
-
-    // serialise/deserialize VehicleAccess object with kotlin
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
-    implementation 'com.charleskorn.kaml:kaml:0.47.0'
-
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'io.mockk:mockk:1.10.6'
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
-application {
-    mainClassName "WebServer"
 }
