@@ -52,7 +52,13 @@ class DevCenterSnippetTests {
           hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ).get();
 
         if (response.getResponse() != null) {
-            logger.info(format("requestClearances response: %s", response.getResponse()));
+            RequestClearanceResponse requestClearanceResponse = response.getResponse();
+
+            if (requestClearanceResponse.getStatus() == ClearanceStatus.Status.ERROR) {
+                logger.error(format("Request clearance error: %s", requestClearanceResponse.getDescription()));
+            } else {
+                logger.info(format("requestClearances response: %s", requestClearanceResponse));
+            }
         } else {
             logger.info(format("requestClearances error: %s", response.getError().getTitle()));
         }

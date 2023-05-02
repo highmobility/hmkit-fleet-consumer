@@ -161,10 +161,11 @@ class WebServer {
     }
 
     private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
+        // make sure you have Get Vehicle Speed permission in your console app
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
         TelematicsResponse response = hmkitFleet.sendCommand(
-          new Bytes("0D11AF0003"),
+          getVehicleSpeed,
           vehicleAccess
         ).get();
 
