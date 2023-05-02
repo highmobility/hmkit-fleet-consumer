@@ -53,7 +53,7 @@ import com.highmobility.hmkitfleet.network.TelematicsResponse;
 import static java.lang.String.format;
 
 class WebServer {
-    final String vin1 = "C0NNECT0000000009";
+    final String vin1 = "1HM9CY66SL1gNPGORE";
     final String vin2 = "C0NNECT0000000010";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -72,16 +72,30 @@ class WebServer {
         hmkitFleet.setConfiguration(configurationStore.read());
 
         Brand brand = Brand.SANDBOX;
-        getEligibility(vin1, brand);
 
-//        requestClearance(testVin, brand);
-//        requestClearance(testVin2);
-//        getClearanceStatuses();
-//        getClearanceStatus(testVin);
-//        VehicleAccess vehicleAccess = getVehicleAccess(testVin);
-//        getVehicleDiagnostics(vehicleAccess);
-//        revokeClearance(testVin2);
-//        deleteClearance(testVin2);
+        // # get whether the vehicle is eligible for clearance
+
+        // getEligibility(vin1, brand);
+
+        // # request clearance
+
+        // requestClearance(vin1, brand);
+        // requestClearance(vin2, brand);
+
+        // # verify clearance
+
+        // getClearanceStatuses();
+        // getClearanceStatus(vin1);
+
+        // # get vehicle access object and diagnostics state.
+        // You can use VehicleAccessStore to store the VehicleAccess object
+
+        VehicleAccess vehicleAccess = getVehicleAccess(vin1);
+        getVehicleDiagnostics(vehicleAccess);
+
+        // # delete clearance
+
+        // deleteClearance(vin2);
 
         logger.info("End: " + getDate());
     }
