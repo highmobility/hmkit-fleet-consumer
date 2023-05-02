@@ -49,13 +49,12 @@ import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.network.Response;
 import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
 import com.highmobility.hmkitfleet.network.TelematicsResponse;
-import com.highmobility.value.Bytes;
 
 import static java.lang.String.format;
 
 class WebServer {
-    final String testVin = "C0NNECT0000000009";
-    final String testVin2 = "C0NNECT0000000010";
+    final String vin1 = "C0NNECT0000000009";
+    final String vin2 = "C0NNECT0000000010";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
@@ -73,9 +72,9 @@ class WebServer {
         hmkitFleet.setConfiguration(configurationStore.read());
 
         Brand brand = Brand.SANDBOX;
-        getEligibility("1HM9CY66SL1gNPGORE", brand);
+        getEligibility(vin1, brand);
 
-//        requestClearance("1HM9CY66SL1gNPGORE", brand);
+//        requestClearance(testVin, brand);
 //        requestClearance(testVin2);
 //        getClearanceStatuses();
 //        getClearanceStatus(testVin);
