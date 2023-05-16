@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json;
 /**
  * Stores/reads VehicleAccess object in vehicleAccess.json file.
  * <p>
- * VehicleAccess is encoded with Kotlin encoder, which results in
+ * VehicleAccess is encoded with kotlinx.serialization encoder, which results in
  * a JSON formatted string. That string is written to the vehicleAccess.json file.
  * Storing to file could be replaced with a database in production.
  * <p>
@@ -44,7 +44,7 @@ class VehicleAccessStore {
                 return Optional.of(vehicleAccess);
             }
         } catch (IOException e) {
-            System.out.println("Cannot read VehicleAccess file");
+            System.out.println("Cannot read vehicleAccess.json file");
         }
 
         return Optional.empty();

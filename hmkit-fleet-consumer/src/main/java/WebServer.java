@@ -53,8 +53,8 @@ import com.highmobility.hmkitfleet.network.TelematicsResponse;
 import static java.lang.String.format;
 
 class WebServer {
-    final String vin1 = "1HM9CY66SL1gNPGORE";
-    final String vin2 = "C0NNECT0000000010";
+    final String vin1 = "C0NNECT0000000000";
+    final String vin2 = "C0NNECT0000000001";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
@@ -69,6 +69,8 @@ class WebServer {
         logger.info("Start " + getDate());
 
         hmkitFleet.setEnvironment(HMKitFleet.Environment.SANDBOX);
+        // Instead of reading from file, you could also set the configuration by creating a new
+        // ServiceAccountApiConfiguration object.
         hmkitFleet.setConfiguration(configurationStore.read());
 
         Brand brand = Brand.SANDBOX;
@@ -161,6 +163,8 @@ class WebServer {
 
 
     private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException, IOException {
+        // If you're having problems with stored VehicleAccess object, you can delete the vehicleAccess.json file from
+        // the project directory.
         Optional<VehicleAccess> storedVehicleAccess = vehicleAccessStore.read(vin);
         if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
 
@@ -224,7 +228,7 @@ class WebServer {
         if (response.getError() != null) {
             logger.info(format("deleteClearance error: %s", response.getError().getDetail()));
         } else {
-            logger.info("deleteClearance success %s");
+            logger.info("deleteClearance success");
         }
     }
 
