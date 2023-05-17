@@ -49,7 +49,15 @@ oauthClientSecret: ""
 */
 
 class ServiceAccountApiConfigurationStore {
-    String path = getClass().getClassLoader().getResource("credentials.yaml").getFile();
+    String path;
+
+    ServiceAccountApiConfigurationStore() {
+        path = getClass().getClassLoader().getResource("credentials.yaml").getFile();
+    }
+
+    ServiceAccountApiConfigurationStore(String path) {
+        this.path = getClass().getClassLoader().getResource(path).getFile();
+    }
 
     public ServiceAccountApiConfiguration read() throws IOException {
         File credentialsFile = new File(path);

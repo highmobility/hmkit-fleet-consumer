@@ -27,10 +27,16 @@ import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
-import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
+import com.highmobility.hmkitfleet.model.Brand;
+import com.highmobility.hmkitfleet.model.ClearanceStatus;
+import com.highmobility.hmkitfleet.model.ControlMeasure;
 import com.highmobility.hmkitfleet.model.EligibilityStatus;
+import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.hmkitfleet.model.VehicleAccess;
+import com.highmobility.hmkitfleet.network.Response;
+import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
+import com.highmobility.hmkitfleet.network.TelematicsResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,41 +49,38 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import com.highmobility.hmkitfleet.model.Brand;
-import com.highmobility.hmkitfleet.model.ClearanceStatus;
-import com.highmobility.hmkitfleet.model.ControlMeasure;
-import com.highmobility.hmkitfleet.model.Odometer;
-import com.highmobility.hmkitfleet.network.Response;
-import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
-import com.highmobility.hmkitfleet.network.TelematicsResponse;
-
 import static java.lang.String.format;
 
-class WebServer {
-    final String vin1 = "C0NNECT0000000000";
-    final String vin2 = "C0NNECT0000000001";
+class WebServerMultiHmKit {
+    final String vin1 = "C0NNECT0000000000"; // sandbox simulator 1
+    final String vin2 = "C0NNECT0000000001"; // sandbox simulator 2
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     // Instead of reading from storage, you could also set the configuration by creating a new
     // ServiceAccountApiConfiguration object.
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
-    ServiceAccountApiConfiguration configuration = configurationStore.read();
+    ServiceAccountApiConfigurationStore configurationStoreTwo = new ServiceAccountApiConfigurationStore("credentials2.yaml");
 
     // Store the VehicleAccess object for later use
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
 
-    WebServer() throws IOException {
+    WebServerMultiHmKit() {
     }
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
-        new WebServer().start();
+        new WebServerMultiHmKit().start();
     }
 
     void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
 
-        HMKitFleet hmkit = new HMKitFleet(
-          configuration,
+        HMKitFleet hmkitOne = new HMKitFleet(
+          configurationStore.read(),
+          HMKitFleet.Environment.SANDBOX
+        );
+
+        HMKitFleet hmkitTwo = new HMKitFleet(
+          configurationStoreTwo.read(),
           HMKitFleet.Environment.SANDBOX
         );
 
@@ -85,27 +88,30 @@ class WebServer {
 
         // # get whether the vehicle is eligible for clearance
 
-        getEligibility(hmkit, vin1, brand);
+        getEligibility(hmkitOne, vin1, brand);
+        getEligibility(hmkitTwo, vin2, brand);
 
         // # request clearance
 
-        // requestClearance(hmkit, vin1, brand);
-        // requestClearance(hmkit, vin2, brand);
+        requestClearance(hmkitOne, vin1, brand);
+        requestClearance(hmkitTwo, vin2, brand);
 
         // # verify clearance
 
-        // getClearanceStatuses(hmkit);
-        // getClearanceStatus(hmkit, vin1);
+        getClearanceStatus(hmkitOne, vin1);
+        getClearanceStatus(hmkitTwo, vin2);
 
         // # get vehicle access object and diagnostics state.
-        // You can use VehicleAccessStore to store the VehicleAccess object
 
-        // VehicleAccess vehicleAccess = getVehicleAccess(hmkit, vin1);
-        // getVehicleDiagnostics(hmkit, vehicleAccess);
+        VehicleAccess vehicleAccess = getVehicleAccess(hmkitOne, vin1);
+        getVehicleDiagnostics(hmkitOne, vehicleAccess);
+
+        VehicleAccess vehicleAccessTwo = getVehicleAccess(hmkitTwo, vin2);
+        getVehicleDiagnostics(hmkitTwo, vehicleAccessTwo);
 
         // # delete clearance
 
-        // deleteClearance(hmkit, vin2);
+         // deleteClearance(hmkitOne, vin1);
 
         logger.info("End: " + getDate());
     }

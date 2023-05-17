@@ -87,6 +87,6 @@ obj
 *.o.d
 *.jnilib
 
-credentials.yaml
+credentials*.yaml
 vehicleAccess.yaml
 vehicleAccess.json
