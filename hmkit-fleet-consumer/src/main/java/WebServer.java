@@ -27,6 +27,7 @@ import com.highmobility.autoapi.CommandResolver;
 import com.highmobility.autoapi.Diagnostics;
 import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
 import com.highmobility.hmkitfleet.model.EligibilityStatus;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
 import com.highmobility.hmkitfleet.model.VehicleAccess;
@@ -57,9 +58,16 @@ class WebServer {
     final String vin2 = "C0NNECT0000000001";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
+    // Instead of reading from storage, you could also set the configuration by creating a new
+    // ServiceAccountApiConfiguration object.
     ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
+    ServiceAccountApiConfiguration configuration = configurationStore.read();
+
+    // Store the VehicleAccess object for later use
     VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
-    HMKitFleet hmkitFleet = HMKitFleet.INSTANCE;
+
+    WebServer() throws IOException {
+    }
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         new WebServer().start();
@@ -68,42 +76,42 @@ class WebServer {
     void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
 
-        hmkitFleet.setEnvironment(HMKitFleet.Environment.SANDBOX);
-        // Instead of reading from file, you could also set the configuration by creating a new
-        // ServiceAccountApiConfiguration object.
-        hmkitFleet.setConfiguration(configurationStore.read());
+        HMKitFleet hmkit = new HMKitFleet(
+          configuration,
+          HMKitFleet.Environment.SANDBOX
+        );
 
         Brand brand = Brand.SANDBOX;
 
         // # get whether the vehicle is eligible for clearance
 
-        // getEligibility(vin1, brand);
+        getEligibility(hmkit, vin1, brand);
 
         // # request clearance
 
-        // requestClearance(vin1, brand);
-        // requestClearance(vin2, brand);
+        requestClearance(hmkit, vin1, brand);
+        requestClearance(hmkit, vin2, brand);
 
         // # verify clearance
 
-        // getClearanceStatuses();
-        // getClearanceStatus(vin1);
+        getClearanceStatuses(hmkit);
+        getClearanceStatus(hmkit, vin1);
 
         // # get vehicle access object and diagnostics state.
         // You can use VehicleAccessStore to store the VehicleAccess object
 
-        VehicleAccess vehicleAccess = getVehicleAccess(vin1);
-        getVehicleDiagnostics(vehicleAccess);
+        VehicleAccess vehicleAccess = getVehicleAccess(hmkit, vin1);
+        getVehicleDiagnostics(hmkit, vehicleAccess);
 
         // # delete clearance
 
-        // deleteClearance(vin2);
+        // deleteClearance(hmkit, vin2);
 
         logger.info("End: " + getDate());
     }
 
-    private void getEligibility(String vin, Brand brand) throws ExecutionException, InterruptedException {
-        Response<EligibilityStatus> response = hmkitFleet.getEligibility(vin, brand).get();
+    private void getEligibility(HMKitFleet hmkit, String vin, Brand brand) throws ExecutionException, InterruptedException {
+        Response<EligibilityStatus> response = hmkit.getEligibility(vin, brand).get();
 
         if (response.getResponse() != null) {
             logger.info(format("getEligibility response: %s", response.getResponse()));
@@ -112,13 +120,13 @@ class WebServer {
         }
     }
 
-    private void requestClearance(String vin, Brand brand) throws ExecutionException, InterruptedException {
+    private void requestClearance(HMKitFleet hmkit, String vin, Brand brand) throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<ControlMeasure> measures = new ArrayList<>();
         measures.add(measure);
 
         Response<RequestClearanceResponse> response =
-          hmkitFleet.requestClearance(
+          hmkit.requestClearance(
             vin,
             brand,
             measures
@@ -131,8 +139,8 @@ class WebServer {
         }
     }
 
-    private void getClearanceStatuses() throws ExecutionException, InterruptedException {
-        Response<List<ClearanceStatus>> response = hmkitFleet.getClearanceStatuses().get();
+    private void getClearanceStatuses(HMKitFleet hmkit) throws ExecutionException, InterruptedException {
+        Response<List<ClearanceStatus>> response = hmkit.getClearanceStatuses().get();
 
         if (response.getResponse() != null) {
             logger.info("getClearanceStatuses response");
@@ -147,8 +155,8 @@ class WebServer {
     }
 
 
-    private void getClearanceStatus(String vin) throws ExecutionException, InterruptedException {
-        Response<ClearanceStatus> response = hmkitFleet.getClearanceStatus(vin).get();
+    private void getClearanceStatus(HMKitFleet hmkit, String vin) throws ExecutionException, InterruptedException {
+        Response<ClearanceStatus> response = hmkit.getClearanceStatus(vin).get();
         ClearanceStatus status = response.getResponse();
 
         if (status != null) {
@@ -162,13 +170,14 @@ class WebServer {
     }
 
 
-    private VehicleAccess getVehicleAccess(String vin) throws ExecutionException, InterruptedException, IOException {
+    private VehicleAccess getVehicleAccess(HMKitFleet hmkit, String vin) throws
+      ExecutionException, InterruptedException, IOException {
         // If you're having problems with stored VehicleAccess object, you can delete the vehicleAccess.json file from
         // the project directory.
         Optional<VehicleAccess> storedVehicleAccess = vehicleAccessStore.read(vin);
         if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
 
-        Response<VehicleAccess> accessResponse = hmkitFleet.getVehicleAccess(vin).get();
+        Response<VehicleAccess> accessResponse = hmkit.getVehicleAccess(vin).get();
         if (accessResponse.getError() != null)
             throw new RuntimeException(accessResponse.getError().getDetail());
 
@@ -177,11 +186,12 @@ class WebServer {
         return serverVehicleAccess;
     }
 
-    private void getVehicleDiagnostics(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
+    private void getVehicleDiagnostics(HMKitFleet hmkit, VehicleAccess vehicleAccess) throws
+      ExecutionException, InterruptedException {
         // make sure you have Get Vehicle Speed permission in your console app
         Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
 
-        TelematicsResponse response = hmkitFleet.sendCommand(
+        TelematicsResponse response = hmkit.sendCommand(
           getVehicleSpeed,
           vehicleAccess
         ).get();
@@ -222,7 +232,7 @@ class WebServer {
         }
     }
 
-    private void deleteClearance(String vin) throws ExecutionException, InterruptedException {
+    private void deleteClearance(HMKitFleet hmkitFleet, String vin) throws ExecutionException, InterruptedException {
         Response<RequestClearanceResponse> response = hmkitFleet.deleteClearance(vin).get();
 
         if (response.getError() != null) {
