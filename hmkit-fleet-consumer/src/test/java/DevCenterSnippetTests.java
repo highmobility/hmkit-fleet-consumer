@@ -11,6 +11,7 @@ import com.highmobility.value.Bytes;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -40,7 +41,9 @@ class DevCenterSnippetTests {
           "", // Add OAuth2 Client ID here
           ""  // Add OAuth2 Client Secret here
         );
-        HMKitFleet.INSTANCE.setConfiguration(configuration);
+        HMKitFleet hmkit = new HMKitFleet(
+          configuration
+        );
     }
 
     HMKitFleet hmkitFleet;
@@ -66,7 +69,9 @@ class DevCenterSnippetTests {
 
     void one_a() throws ExecutionException, InterruptedException {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
-        List<ControlMeasure> measures = List.of(measure);
+
+        List<ControlMeasure> measures = new ArrayList<>();
+        measures.add(measure);
 
         Response<RequestClearanceResponse> response =
           hmkitFleet.requestClearance(vin, Brand.MERCEDES_BENZ, measures).get();
