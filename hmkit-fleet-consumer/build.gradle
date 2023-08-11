@@ -13,11 +13,6 @@ java {
 }
 
 dependencies {
-    // `vehicle-access-store` includes the serialization of the VehicleAccess object.
-    // It is included separately because serialization requires Kotlin dependencies. If you do not
-    // need to serialize the VehicleAccess object, you can remove this dependency.
-    implementation project(":vehicle-access-store")
-
     if (!project.hasProperty('depLocation') || project.depLocation > 0) {
         implementation deps.hmkit
     } else {

@@ -22,49 +22,35 @@
  * THE SOFTWARE.
  */
 
-import com.highmobility.autoapi.Command;
-import com.highmobility.autoapi.CommandResolver;
-import com.highmobility.autoapi.Diagnostics;
-import com.highmobility.autoapi.FailureMessage;
 import com.highmobility.hmkitfleet.HMKitFleet;
-import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration;
+import com.highmobility.hmkitfleet.model.Brand;
+import com.highmobility.hmkitfleet.model.ClearanceStatus;
+import com.highmobility.hmkitfleet.model.ControlMeasure;
 import com.highmobility.hmkitfleet.model.EligibilityStatus;
+import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse;
-import com.highmobility.hmkitfleet.model.VehicleAccess;
+import com.highmobility.hmkitfleet.network.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-
-import com.highmobility.hmkitfleet.model.Brand;
-import com.highmobility.hmkitfleet.model.ClearanceStatus;
-import com.highmobility.hmkitfleet.model.ControlMeasure;
-import com.highmobility.hmkitfleet.model.Odometer;
-import com.highmobility.hmkitfleet.network.Response;
-import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
-import com.highmobility.hmkitfleet.network.TelematicsResponse;
 
 import static java.lang.String.format;
 
 class WebServer {
-    final String vin1 = "C0NNECT0000000000";
+    final String vin1 = "1HMYN231H68BWD9EB";
+    //    final String vin1 = "C0NNECT0000000000";
     final String vin2 = "C0NNECT0000000001";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
-    // Instead of reading from storage, you could also set the configuration by creating a new
-    // ServiceAccountApiConfiguration object.
-    ServiceAccountApiConfigurationStore configurationStore = new ServiceAccountApiConfigurationStore();
-    ServiceAccountApiConfiguration configuration = configurationStore.read();
-
-    // Store the VehicleAccess object for later use
-    VehicleAccessStore vehicleAccessStore = new VehicleAccessStore();
 
     WebServer() throws IOException {
     }
@@ -73,41 +59,44 @@ class WebServer {
         new WebServer().start();
     }
 
+    String readPrivateKeyJson() throws IOException {
+        // json file downloaded from High-Mobility console
+        String path = getClass().getClassLoader().getResource("private-key.json").getFile();
+        File privateKeyFile = new File(path);
+        String contents = new String(Files.readAllBytes(privateKeyFile.toPath()));
+        return contents;
+    }
+
     void start() throws IOException, ExecutionException, InterruptedException {
         logger.info("Start " + getDate());
+        String privateKey = readPrivateKeyJson();
 
-        HMKitFleet hmkit = new HMKitFleet(
-          configuration,
-          HMKitFleet.Environment.SANDBOX
-        );
+        HMKitFleet hmkit = new HMKitFleet(privateKey, HMKitFleet.Environment.SANDBOX);
 
         Brand brand = Brand.SANDBOX;
 
         // # get whether the vehicle is eligible for clearance
 
-        getEligibility(hmkit, vin1, brand);
+//        getEligibility(hmkit, vin1, brand);
 
         // # request clearance
 
-        // requestClearance(hmkit, vin1, brand);
+//         requestClearance(hmkit, vin1, brand);
         // requestClearance(hmkit, vin2, brand);
 
         // # verify clearance
 
         // getClearanceStatuses(hmkit);
-        // getClearanceStatus(hmkit, vin1);
+//        getClearanceStatus(hmkit, vin1);
 
-        // # get vehicle access object and diagnostics state.
-        // You can use VehicleAccessStore to store the VehicleAccess object
-
-        // VehicleAccess vehicleAccess = getVehicleAccess(hmkit, vin1);
-        // getVehicleDiagnostics(hmkit, vehicleAccess);
+        getVehicleStatus(hmkit, vin1);
 
         // # delete clearance
 
         // deleteClearance(hmkit, vin2);
 
         logger.info("End: " + getDate());
+        System.exit(0);
     }
 
     private void getEligibility(HMKitFleet hmkit, String vin, Brand brand) throws ExecutionException, InterruptedException {
@@ -169,66 +158,15 @@ class WebServer {
         }
     }
 
+    private void getVehicleStatus(HMKitFleet hmkit, String vin) throws ExecutionException, InterruptedException {
+        Response<String> response = hmkit.getVehicleState(vin).get();
 
-    private VehicleAccess getVehicleAccess(HMKitFleet hmkit, String vin) throws
-      ExecutionException, InterruptedException, IOException {
-        // If you're having problems with stored VehicleAccess object, you can delete the vehicleAccess.json file from
-        // the project directory.
-        Optional<VehicleAccess> storedVehicleAccess = vehicleAccessStore.read(vin);
-        if (storedVehicleAccess.isPresent()) return storedVehicleAccess.get();
+        if (response.getResponse() != null) {
+            String jsonString = response.getResponse();
 
-        Response<VehicleAccess> accessResponse = hmkit.getVehicleAccess(vin).get();
-        if (accessResponse.getError() != null)
-            throw new RuntimeException(accessResponse.getError().getDetail());
-
-        VehicleAccess serverVehicleAccess = accessResponse.getResponse();
-        vehicleAccessStore.store(serverVehicleAccess);
-        return serverVehicleAccess;
-    }
-
-    private void getVehicleDiagnostics(HMKitFleet hmkit, VehicleAccess vehicleAccess) throws
-      ExecutionException, InterruptedException {
-        // make sure you have Get Vehicle Odometer permission in your console app
-        Command getDiagnostics = new Diagnostics.GetState(Diagnostics.PROPERTY_ODOMETER);
-
-        TelematicsResponse response = hmkit.sendCommand(
-          getDiagnostics,
-          vehicleAccess
-        ).get();
-
-        // First check if we have a telematics response
-        if (response.getResponse() == null) {
-            throw new RuntimeException(format("%s - %s", response.getErrors().get(0).getTitle(), response.getErrors().get(0).getDetail()));
-        }
-
-        // Then check if the Telematics response is an error
-        if (response.getResponse().getStatus() != TelematicsCommandResponse.Status.OK) {
-            throw new RuntimeException(format("Telematics command response: %s - %s", response.getResponse().getStatus(), response.getResponse().getMessage()));
-        }
-
-        // Now we can be sure that the Telematics response is a command
-        TelematicsCommandResponse telematicsResponse = response.getResponse();
-
-        logger.info(format("Got telematics response: %s - %s", telematicsResponse.getMessage(), telematicsResponse.getStatus()));
-
-        Command commandFromVehicle = CommandResolver.resolve(telematicsResponse.getResponseData());
-
-        if (commandFromVehicle instanceof Diagnostics.State) {
-            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
-            if (diagnostics.getOdometer().getValue() != null) {
-                logger.info(format(
-                  " > diagnostics.odometer: %s",
-                  diagnostics.getOdometer().getValue().getValue()));
-            } else {
-                logger.info(format(" > diagnostics.bytes: %s", diagnostics));
-            }
-        } else if (commandFromVehicle instanceof FailureMessage.State) {
-            FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
-
-            logger.info(format(
-              " > FailureMessage: %s, %s",
-              failureMessage.getFailureReason().getValue(),
-              failureMessage.getFailureDescription().getValue()));
+            logger.info(format("getVehicleState response: %s", jsonString));
+        } else {
+            logger.info(format("getVehicleState error: %s", response.getError().getTitle()));
         }
     }
 
