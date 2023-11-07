@@ -1,15 +1,18 @@
 plugins {
-    id 'application'
-}
-
-application {
-    mainClassName "WebServer"
+    id 'java'
 }
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
+}
+
+group 'com.high-mobility'
+version '0'
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
@@ -19,14 +22,6 @@ dependencies {
         implementation project(':hmkit-fleet')
     }
 
-    // store credentials
-    implementation project(":credentials-store")
-
-    implementation deps.autoApi
-
-    implementation 'org.slf4j:slf4j-simple:1.7.36'
-
-
-    // tests
-    testImplementation 'junit:junit:4.13.2'
+    // serialise/deserialize VehicleAccess object with kotlin
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
 }
