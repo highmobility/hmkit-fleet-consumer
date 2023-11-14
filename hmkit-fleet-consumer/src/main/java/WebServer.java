@@ -104,7 +104,7 @@ class WebServer {
     // getClearanceStatuses(hmkit);
 //        getClearanceStatus(hmkit, vin1);
 
-//        getVehicleStatus(hmkit, vin1);
+    getVehicleStatus(hmkit, vin1);
 
     // # delete clearance
 
