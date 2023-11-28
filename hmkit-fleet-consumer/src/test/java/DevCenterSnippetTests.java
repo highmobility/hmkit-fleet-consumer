@@ -1,4 +1,8 @@
+import com.highmobility.hmkitfleet.HMKitConfiguration;
+import com.highmobility.hmkitfleet.HMKitCredentials;
 import com.highmobility.hmkitfleet.HMKitFleet;
+import com.highmobility.hmkitfleet.HMKitOAuthCredentials;
+import com.highmobility.hmkitfleet.HMKitPrivateKeyCredentials;
 import com.highmobility.hmkitfleet.model.Brand;
 import com.highmobility.hmkitfleet.model.ClearanceStatus;
 import com.highmobility.hmkitfleet.model.ControlMeasure;
@@ -22,8 +26,34 @@ class DevCenterSnippetTests {
 
     // https://docs.high-mobility.com/guides/getting-started/fleet/
     void snippet() {
-        String privateKey = "{\"inserted_at\":\"2023-08-09T04:24:24\",\"private_key\":\"-----BEGIN PRIVATE KEY-----\\BaSE64\\n-----END PRIVATE KEY-----\",\"instance_uri\":\"https://sandbox.api.high-mobility.com\",\"token_uri\":\"https://sandbox.api.high-mobility.com/v1/auth_tokens\",\"id\":\"ea30adf3-2d8b-4276-9e48-d1ab65cfa685\"}";
-        HMKitFleet hmkit = new HMKitFleet(privateKey);
+        HMKitCredentials credentials = new HMKitOAuthCredentials(
+          "client_id",
+          "client_secret"
+        );
+
+        HMKitConfiguration configuration = new HMKitConfiguration.Builder()
+          .credentials(credentials)
+          .environment(HMKitFleet.Environment.SANDBOX)
+          .build();
+
+        HMKitFleet hmkit = new HMKitFleet(configuration);
+
+
+    }
+
+    void snippet2() {
+        HMKitCredentials credentials = new HMKitPrivateKeyCredentials(
+          "client_id",
+          "private_key",
+          "private_key_id"
+        );
+
+        HMKitConfiguration configuration = new HMKitConfiguration.Builder()
+          .credentials(credentials)
+          .environment(HMKitFleet.Environment.SANDBOX)
+          .build();
+
+        HMKitFleet hmkit = new HMKitFleet(configuration);
     }
 
     HMKitFleet hmkitFleet;

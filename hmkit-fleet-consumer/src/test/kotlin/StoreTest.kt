@@ -26,7 +26,7 @@ import com.highmobility.hmkitfleet.model.AccessToken
 import com.highmobility.hmkitfleet.model.VehicleAccess
 import com.highmobility.value.Bytes
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class StoreTest {
     // There is a bug currently with mockk: https://github.com/mockk/mockk/issues/368#issuecomment-1223549420
