@@ -105,6 +105,7 @@ class WebServer {
 //        getClearanceStatus(hmkit, vin1);
 
     getVehicleStatus(hmkit, vin1);
+    getVehicleStaticData(hmkit, vin1);
 
     // # delete clearance
 
@@ -182,6 +183,18 @@ class WebServer {
       logger.info(format("getVehicleState response: %s", jsonString));
     } else {
       logger.info(format("getVehicleState error: %s", response.getError().getTitle()));
+    }
+  }
+
+  private void getVehicleStaticData(HMKitFleet hmkit, String vin) throws ExecutionException, InterruptedException {
+    Response<String> response = hmkit.getVehicleStaticData(vin).get();
+
+    if (response.getResponse() != null) {
+      String jsonString = response.getResponse();
+
+      logger.info(format("vehicle static data response: %s", jsonString));
+    } else {
+      logger.info(format("vehicle static data error: %s", response.getError().getTitle()));
     }
   }
 
