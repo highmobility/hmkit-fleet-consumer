@@ -49,11 +49,12 @@ import com.highmobility.hmkitfleet.model.Odometer;
 import com.highmobility.hmkitfleet.network.Response;
 import com.highmobility.hmkitfleet.network.TelematicsCommandResponse;
 import com.highmobility.hmkitfleet.network.TelematicsResponse;
+import com.highmobility.value.Bytes;
 
 import static java.lang.String.format;
 
 class WebServer {
-    final String vin1 = "1HM9CY66SL1gNPGORE";
+    final String vin1 = "C0NNECT0000000000";
     final String vin2 = "C0NNECT0000000010";
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -198,6 +199,45 @@ class WebServer {
         logger.info(format("Got telematics response: %s - %s", telematicsResponse.getMessage(), telematicsResponse.getStatus()));
 
         Command commandFromVehicle = CommandResolver.resolve(telematicsResponse.getResponseData());
+
+        if (commandFromVehicle instanceof Diagnostics.State) {
+            Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
+            if (diagnostics.getSpeed().getValue() != null) {
+                logger.info(format(
+                  " > diagnostics.speed: %s",
+                  diagnostics.getSpeed().getValue().getValue()));
+            } else {
+                logger.info(format(" > diagnostics.bytes: %s", diagnostics));
+            }
+        } else if (commandFromVehicle instanceof FailureMessage.State) {
+            FailureMessage.State failureMessage = (FailureMessage.State) commandFromVehicle;
+
+            logger.info(format(
+              " > FailureMessage: %s, %s",
+              failureMessage.getFailureReason().getValue(),
+              failureMessage.getFailureDescription().getValue()));
+        }
+    }
+
+    private void getVehicleDiagnosticsV05(VehicleAccess vehicleAccess) throws ExecutionException, InterruptedException {
+        // make sure you have Get Vehicle Speed permission in your console app
+        Command getVehicleSpeed = new Diagnostics.GetState(Diagnostics.PROPERTY_SPEED);
+
+        Response<Bytes> response = hmkitFleet.sendCommandV05(
+          getVehicleSpeed,
+          vehicleAccess
+        ).get();
+
+        // First check if we have a telematics response
+        if (response.getResponse() == null) {
+            throw new RuntimeException(format("%s - %s", response.getError().getTitle(), response.getError().getDetail()));
+        }
+
+        Bytes telematicsResponse = response.getResponse();
+
+        logger.info(format("Got telematics v05 response"));
+
+        Command commandFromVehicle = CommandResolver.resolve(telematicsResponse);
 
         if (commandFromVehicle instanceof Diagnostics.State) {
             Diagnostics.State diagnostics = (Diagnostics.State) commandFromVehicle;
